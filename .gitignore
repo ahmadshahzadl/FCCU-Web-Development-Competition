@@ -1,0 +1,180 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.output/
+.vercel/
+.netlify/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+.nyc_output/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.temp/
+
+# TypeScript
+*.tsbuildinfo
+.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache
+.parcel-cache
+
+# Next.js
+.next/
+out/
+
+# Nuxt.js
+.nuxt/
+dist/
+
+# Vite
+dist-ssr/
+*.local
+.vite/
+
+# Rollup
+.rollup.cache/
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# Prisma
+prisma/migrations/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# MongoDB local data (if running MongoDB locally)
+data/
+mongodb-data/
+
+# Misc
+*.pem
+.cert/
+*.key
+
+# Project-specific: File uploads directory (Multer)
+uploads/
+public/uploads/
+backend/uploads/
+backend/public/uploads/
+
+# Project-specific: Socket.io
+socket.io-client/
+
+# Project-specific: OpenAI API cache (if any)
+.openai-cache/
+
+# Project-specific: Build artifacts
+*.map
+source-map-resolver-cache/
+
+# Project-specific: Test coverage
+coverage/
+.nyc_output/
+
+# Project-specific: Local development
+.local/
+local/
+
+# Project-specific: Backup files
+*.backup
+*.bak
+*~
+
+# Project-specific: Lock files (keep package-lock.json for consistency, but ignore others)
+# Note: Some teams prefer to commit package-lock.json
+
+# Project-specific: Environment-specific configs
+config/local.json
+config/development.json
+config/production.json
+
