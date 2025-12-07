@@ -110,12 +110,24 @@ export interface TrendData {
 }
 
 // User Types
+export type UserRole = 'admin' | 'student' | 'team' | 'manager';
+
 export interface User {
   _id: string;
   name: string;
   email: string;
-  role: 'student' | 'admin';
+  role: UserRole;
   studentId?: string;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  user: User;
+  token: string;
 }
 
 // API Response Types

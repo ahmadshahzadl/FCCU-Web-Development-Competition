@@ -10,6 +10,9 @@ import type {
   StatusStats,
   TrendData,
   Notification,
+  LoginCredentials,
+  LoginResponse,
+  User,
 } from '@/types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -50,6 +53,21 @@ class ApiService {
         return Promise.reject(error);
       }
     );
+  }
+
+  // Authentication
+  async login(credentials: LoginCredentials): Promise<LoginResponse> {
+    const response = await this.api.post<LoginResponse>('/auth/login', credentials);
+    return response.data;
+  }
+
+  async logout(): Promise<void> {
+    await this.api.post('/auth/logout');
+  }
+
+  async getCurrentUser(): Promise<User> {
+    const response = await this.api.get<User>('/auth/me');
+    return response.data;
   }
 
   // Request Management

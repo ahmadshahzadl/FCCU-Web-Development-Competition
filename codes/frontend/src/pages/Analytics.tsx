@@ -39,56 +39,74 @@ const Analytics = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600">Loading analytics...</div>
+        <div className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
+          Loading analytics...
+        </div>
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Analytics Dashboard</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-300">
+        Analytics Dashboard
+      </h1>
 
       {overview && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Total Requests</p>
-                <p className="text-3xl font-bold text-gray-900">{overview.totalRequests}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 transition-colors duration-300">
+                  Total Requests
+                </p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
+                  {overview.totalRequests}
+                </p>
               </div>
-              <BarChart3 className="h-12 w-12 text-primary-600" />
+              <BarChart3 className="h-12 w-12 text-primary-600 dark:text-primary-400 transition-colors duration-300" />
             </div>
           </div>
 
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Active Requests</p>
-                <p className="text-3xl font-bold text-gray-900">{overview.activeRequests}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 transition-colors duration-300">
+                  Active Requests
+                </p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
+                  {overview.activeRequests}
+                </p>
               </div>
-              <TrendingUp className="h-12 w-12 text-blue-600" />
+              <TrendingUp className="h-12 w-12 text-blue-600 dark:text-blue-400 transition-colors duration-300" />
             </div>
           </div>
 
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Resolved</p>
-                <p className="text-3xl font-bold text-gray-900">{overview.resolvedRequests}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 transition-colors duration-300">
+                  Resolved
+                </p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
+                  {overview.resolvedRequests}
+                </p>
               </div>
-              <CheckCircle className="h-12 w-12 text-green-600" />
+              <CheckCircle className="h-12 w-12 text-green-600 dark:text-green-400 transition-colors duration-300" />
             </div>
           </div>
 
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Avg. Resolution</p>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 transition-colors duration-300">
+                  Avg. Resolution
+                </p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
                   {Math.round(overview.averageResolutionTime)}h
                 </p>
               </div>
-              <Clock className="h-12 w-12 text-yellow-600" />
+              <Clock className="h-12 w-12 text-amber-600 dark:text-amber-400 transition-colors duration-300" />
             </div>
           </div>
         </div>
@@ -96,7 +114,9 @@ const Analytics = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="card">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Requests by Category</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 transition-colors duration-300">
+            Requests by Category
+          </h2>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -119,12 +139,14 @@ const Analytics = () => {
         </div>
 
         <div className="card">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Category Distribution</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 transition-colors duration-300">
+            Category Distribution
+          </h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={categoryStats}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="category" />
-              <YAxis />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-700" />
+              <XAxis dataKey="category" stroke="#6b7280" className="dark:stroke-gray-400" />
+              <YAxis stroke="#6b7280" className="dark:stroke-gray-400" />
               <Tooltip />
               <Legend />
               <Bar dataKey="count" fill="#0ea5e9" />
@@ -134,12 +156,14 @@ const Analytics = () => {
       </div>
 
       <div className="card">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Request Trends</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 transition-colors duration-300">
+          Request Trends
+        </h2>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={trends}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-700" />
+            <XAxis dataKey="date" stroke="#6b7280" className="dark:stroke-gray-400" />
+            <YAxis stroke="#6b7280" className="dark:stroke-gray-400" />
             <Tooltip />
             <Legend />
             <Line type="monotone" dataKey="count" stroke="#0ea5e9" strokeWidth={2} />

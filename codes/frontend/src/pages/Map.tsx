@@ -67,7 +67,9 @@ const Map = () => {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Campus Map</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-300">
+        Campus Map
+      </h1>
 
       <div className="card mb-4">
         <div className="flex flex-wrap gap-2">
@@ -75,10 +77,10 @@ const Map = () => {
             <button
               key={type.value}
               onClick={() => setSelectedType(type.value)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors duration-300 ${
                 selectedType === type.value
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'bg-primary-600 dark:bg-primary-500 text-white'
+                  : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
               }`}
             >
               {type.label}
@@ -102,10 +104,16 @@ const Map = () => {
               <Marker key={location._id} position={location.coordinates}>
                 <Popup>
                   <div>
-                    <h3 className="font-semibold text-lg">{location.name}</h3>
-                    <p className="text-sm text-gray-600 capitalize">{location.type}</p>
+                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white transition-colors duration-300">
+                      {location.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 capitalize transition-colors duration-300">
+                      {location.type}
+                    </p>
                     {location.description && (
-                      <p className="text-sm text-gray-500 mt-1">{location.description}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">
+                        {location.description}
+                      </p>
                     )}
                   </div>
                 </Popup>
