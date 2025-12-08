@@ -51,7 +51,16 @@ class ApiService {
     const response = await apiClient.get<Category[]>('/categories', {
       params: includeInactive ? { includeInactive: 'true' } : {},
     });
-    return response.data;
+    // Handle both direct array and wrapped response
+    const data = response.data;
+    if (Array.isArray(data)) {
+      return data;
+    }
+    // Check if it's a wrapped response with nested data
+    if (data && typeof data === 'object' && 'data' in data && Array.isArray((data as any).data)) {
+      return (data as any).data;
+    }
+    return [];
   }
 
   /**

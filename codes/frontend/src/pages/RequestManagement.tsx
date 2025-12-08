@@ -332,30 +332,30 @@ const RequestManagement = () => {
   };
 
   return (
-    <div className="w-full space-y-4 md:space-y-6 px-2 md:px-0 transition-colors duration-300">
+    <div className="w-full space-y-3 sm:space-y-4 md:space-y-6 px-3 sm:px-4 md:px-0 transition-colors duration-300">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors duration-300">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 transition-colors duration-300">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
             Request Management
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">
             Manage and track service requests
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
           {/* Socket Connection Status */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-            <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-            <span className="text-xs text-gray-600 dark:text-gray-400">
-              {connected ? 'Live' : 'Disconnected'}
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${connected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+            <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
+              {connected ? 'Live' : 'Offline'}
             </span>
           </div>
           <button
             onClick={loadRequests}
-            className="btn btn-secondary flex items-center space-x-2 text-sm px-3 py-2"
+            className="btn btn-secondary flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-initial min-w-0"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-4 w-4 flex-shrink-0" />
             <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>
