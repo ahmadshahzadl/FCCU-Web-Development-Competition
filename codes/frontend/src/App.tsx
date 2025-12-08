@@ -17,6 +17,7 @@ import Chat from './pages/Chat';
 import UserManagement from './pages/UserManagement';
 import RequestManagement from './pages/RequestManagement';
 import CategoryManagement from './pages/CategoryManagement';
+import TeamRequestsList from './pages/TeamRequestsList';
 import Profile from './pages/Profile';
 import Chatbot from './components/Chatbot/Chatbot';
 
@@ -140,6 +141,16 @@ const AppRoutes = () => {
           <ProtectedRoute allowedRoles={['admin', 'manager', 'team']}>
             <Layout>
               <Dashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/team-requests"
+        element={
+          <ProtectedRoute allowedRoles={['team']}>
+            <Layout>
+              <TeamRequestsList />
             </Layout>
           </ProtectedRoute>
         }

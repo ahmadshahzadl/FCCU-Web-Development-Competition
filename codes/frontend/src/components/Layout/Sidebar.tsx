@@ -38,6 +38,7 @@ const Sidebar = () => {
     { path: '/profile', label: 'My Profile', icon: UserCircle },
     { path: '/users', label: 'User Management', icon: Users, roles: ['admin', 'manager'] },
     { path: '/requests', label: 'Request Management', icon: ClipboardList, roles: ['admin', 'manager'] },
+    { path: '/team-requests', label: 'Requests', icon: ClipboardList, roles: ['team'] },
     { path: '/categories', label: 'Category Management', icon: FolderTree, roles: ['admin', 'manager'] },
   ];
 

@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import type { ChatMessage, Notification } from '@/types';
+import type { ChatMessage, Notification, ServiceRequest } from '@/types';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
 
@@ -100,6 +100,113 @@ class SocketService {
   emitTyping(requestId: string, isTyping: boolean): void {
     if (this.socket) {
       this.socket.emit('typing', { requestId, isTyping });
+    }
+  }
+
+  // ==================== Request Events ====================
+
+  // Student: Listen for updates to own requests
+  onUserRequestUpdated(callback: (payload: { request: ServiceRequest; updatedBy?: string }) => void): void {
+    if (this.socket) {
+      this.socket.on('user:request_updated', callback);
+    }
+  }
+
+  offUserRequestUpdated(callback: (payload: { request: ServiceRequest; updatedBy?: string }) => void): void {
+    if (this.socket) {
+      this.socket.off('user:request_updated', callback);
+    }
+  }
+
+  // Team: Listen for new requests
+  onRequestCreated(callback: (payload: { request: ServiceRequest }) => void): void {
+    if (this.socket) {
+      this.socket.on('request:created', callback);
+    }
+  }
+
+  offRequestCreated(callback: (payload: { request: ServiceRequest }) => void): void {
+    if (this.socket) {
+      this.socket.off('request:created', callback);
+    }
+  }
+
+  // Team: Listen for request updates
+  onRequestUpdated(callback: (payload: { request: ServiceRequest; updatedBy?: string }) => void): void {
+    if (this.socket) {
+      this.socket.on('request:updated', callback);
+    }
+  }
+
+  offRequestUpdated(callback: (payload: { request: ServiceRequest; updatedBy?: string }) => void): void {
+    if (this.socket) {
+      this.socket.off('request:updated', callback);
+    }
+  }
+
+  // Team: Listen for status updates
+  onRequestStatusUpdated(callback: (payload: {
+    request: ServiceRequest;
+    oldStatus: string;
+    newStatus: string;
+    updatedBy?: string;
+  }) => void): void {
+    if (this.socket) {
+      this.socket.on('request:status_updated', callback);
+    }
+  }
+
+  offRequestStatusUpdated(callback: (payload: {
+    request: ServiceRequest;
+    oldStatus: string;
+    newStatus: string;
+    updatedBy?: string;
+  }) => void): void {
+    if (this.socket) {
+      this.socket.off('request:status_updated', callback);
+    }
+  }
+
+  // Team: Listen for resolved requests (when viewing a request)
+  onRequestResolved(callback: (payload: {
+    request: ServiceRequest;
+    oldStatus: string;
+    newStatus: 'resolved';
+    updatedBy?: string;
+  }) => void): void {
+    if (this.socket) {
+      this.socket.on('request:resolved', callback);
+    }
+  }
+
+  offRequestResolved(callback: (payload: {
+    request: ServiceRequest;
+    oldStatus: string;
+    newStatus: 'resolved';
+    updatedBy?: string;
+  }) => void): void {
+    if (this.socket) {
+      this.socket.off('request:resolved', callback);
+    }
+  }
+
+  // Team: Listen for deleted requests
+  onRequestDeleted(callback: (payload: { requestId: string; deletedBy?: string }) => void): void {
+    if (this.socket) {
+      this.socket.on('request:deleted', callback);
+    }
+  }
+
+  offRequestDeleted(callback: (payload: { requestId: string; deletedBy?: string }) => void): void {
+    if (this.socket) {
+      this.socket.off('request:deleted', callback);
+    }
+  }
+
+  // Remove all listeners (useful for cleanup)
+  removeAllListeners(): void {
+    if (this.socket) {
+      this.socket.removeAllListeners();
     }
   }
 }
