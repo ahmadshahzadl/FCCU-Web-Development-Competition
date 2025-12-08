@@ -9,7 +9,8 @@
     "start": "node dist/server.js",
     "type-check": "tsc --noEmit",
     "seed:god": "ts-node src/seeders/godUser.seeder.ts",
-    "seed:categories": "ts-node src/seeders/defaultCategories.seeder.ts"
+    "seed:categories": "ts-node src/seeders/defaultCategories.seeder.ts",
+    "seed:ai": "ts-node src/seeders/aiConfig.seeder.ts"
   },
   "keywords": [
     "campus",
@@ -21,29 +22,29 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^8.0.3",
-    "socket.io": "^4.5.4",
+    "axios": "^1.13.2",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "multer": "^1.4.5-lts.1",
-    "openai": "^4.20.1",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
-    "express-rate-limit": "^7.1.5"
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.3",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^4.20.1",
+    "socket.io": "^4.5.4"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^20.10.5",
-    "@types/cors": "^2.8.17",
-    "@types/multer": "^1.4.11",
     "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
-    "typescript": "^5.3.3",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^20.10.5",
     "nodemon": "^3.0.2",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }
-

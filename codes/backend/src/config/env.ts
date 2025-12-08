@@ -31,6 +31,16 @@ export const env = {
   // OpenAI Configuration
   OPENAI_API_KEY: getEnv('OPENAI_API_KEY', ''),
 
+  // Gemini AI Configuration
+  GEMINI_API_URL: getEnv(
+    'GEMINI_API_URL',
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent'
+  ),
+  GEMINI_API_KEY: getEnv(
+    'GEMINI_API_KEY',
+    'AIzaSyB5utRz6cZ5CHv7fW4-aa0LjurupXgNNv4'
+  ),
+
   // CORS Configuration
   CORS_ORIGIN: getEnv('CORS_ORIGIN', 'http://localhost:5173'),
 
