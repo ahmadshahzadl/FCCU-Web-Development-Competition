@@ -112,30 +112,68 @@ export interface TrendData {
 // User Types
 export type UserRole = 'admin' | 'student' | 'team' | 'manager';
 
+/**
+ * User data structure returned from the API
+ * Matches backend API response format
+ */
 export interface User {
-  _id: string;
-  name: string;
+  id: string;
   email: string;
+  username: string;
+  name?: string;
   role: UserRole;
   studentId?: string;
 }
 
-export interface LoginCredentials {
+/**
+ * Sign-in request payload
+ */
+export interface SignInRequest {
   email: string;
   password: string;
 }
 
-export interface LoginResponse {
+/**
+ * Sign-in response data structure
+ * Matches backend API response format
+ */
+export interface SignInResponseData {
   user: User;
   token: string;
 }
 
-// API Response Types
-export interface ApiResponse<T> {
-  success: boolean;
+/**
+ * API Success Response wrapper
+ */
+export interface ApiSuccessResponse<T> {
+  success: true;
   data: T;
   message?: string;
 }
+
+/**
+ * API Error Response wrapper
+ */
+export interface ApiErrorResponse {
+  success: false;
+  message: string;
+  error?: any;
+  stack?: string; // Only in development
+}
+
+/**
+ * Sign-in API response
+ */
+export interface SignInResponse extends ApiSuccessResponse<SignInResponseData> {}
+
+/**
+ * Generic API Response type
+ */
+export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+// Legacy types for backward compatibility
+export interface LoginCredentials extends SignInRequest {}
+export interface LoginResponse extends SignInResponseData {}
 
 export interface PaginatedResponse<T> {
   data: T[];

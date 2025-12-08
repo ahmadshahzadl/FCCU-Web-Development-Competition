@@ -1,19 +1,44 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { apiService } from '@/services/api';
-import { toast } from 'react-hot-toast';
-import type { User, LoginCredentials, UserRole } from '@/types';
+/**
+ * Authentication Context
+ * 
+ * Provides authentication state and methods throughout the application
+ * Uses the auth service for API calls and storage utility for persistence
+ */
 
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { toast } from 'react-hot-toast';
+import { authService } from '@/services/auth.service';
+import { storage } from '@/utils/storage';
+import { isTokenValid } from '@/utils/token';
+import type { User, SignInRequest, UserRole } from '@/types';
+
+/**
+ * Authentication Context Type
+ */
 interface AuthContextType {
+  /** Current authenticated user */
   user: User | null;
+  /** Loading state for authentication operations */
   loading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => void;
+  /** Sign in function */
+  signIn: (credentials: SignInRequest) => Promise<void>;
+  /** Sign out function */
+  signOut: () => void;
+  /** Check if user is authenticated */
   isAuthenticated: boolean;
+  /** Check if user has one of the specified roles */
   hasRole: (roles: UserRole[]) => boolean;
+  /** Refresh user data from API */
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Hook to access authentication context
+ * 
+ * @throws Error if used outside AuthProvider
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -26,139 +51,146 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+/**
+ * Authentication Provider Component
+ * Manages authentication state and provides auth methods to children
+ */
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  /**
+   * Load authentication state from storage on mount
+   */
   useEffect(() => {
-    // Check if user is already logged in
-    const checkAuth = () => {
+    const loadAuthState = async () => {
       try {
-        const storedUser = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
-        
-        if (storedUser && token) {
-          setUser(JSON.parse(storedUser));
+        const token = storage.getToken();
+        const storedUser = storage.getUser<User>();
+
+        // Validate token if present
+        if (token && storedUser) {
+          // Check if token is still valid
+          if (isTokenValid(token)) {
+            setUser(storedUser);
+            // Optionally refresh user data from API
+            // await refreshUser();
+          } else {
+            // Token expired, clear storage
+            storage.clearAuth();
+          }
         }
       } catch (error) {
-        console.error('Error loading user from storage:', error);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
+        console.error('Error loading auth state:', error);
+        storage.clearAuth();
       } finally {
         setLoading(false);
       }
     };
 
-    checkAuth();
+    loadAuthState();
   }, []);
 
-  const login = async (credentials: LoginCredentials) => {
+  /**
+   * Sign in user with email and password
+   * 
+   * @param credentials - User email and password
+   * @throws Error if sign-in fails
+   */
+  const signIn = useCallback(async (credentials: SignInRequest): Promise<void> => {
     try {
-      // Demo credentials - for development/testing
-      const demoUsers: Record<string, { user: User; token: string }> = {
-        'student@campus.edu': {
-          user: {
-            _id: 'student-001',
-            name: 'John Student',
-            email: 'student@campus.edu',
-            role: 'student',
-            studentId: 'STU-2024-001',
-          },
-          token: 'demo-token-student',
-        },
-        'admin@campus.edu': {
-          user: {
-            _id: 'admin-001',
-            name: 'Admin User',
-            email: 'admin@campus.edu',
-            role: 'admin',
-          },
-          token: 'demo-token-admin',
-        },
-        'team@campus.edu': {
-          user: {
-            _id: 'team-001',
-            name: 'Team Member',
-            email: 'team@campus.edu',
-            role: 'team',
-          },
-          token: 'demo-token-team',
-        },
-        'manager@campus.edu': {
-          user: {
-            _id: 'manager-001',
-            name: 'Manager User',
-            email: 'manager@campus.edu',
-            role: 'manager',
-          },
-          token: 'demo-token-manager',
-        },
-      };
+      setLoading(true);
 
-      // Check demo credentials
-      const demoUser = demoUsers[credentials.email.toLowerCase()];
-      
-      if (demoUser && credentials.password === 'password') {
-        // Store user and token
-        localStorage.setItem('user', JSON.stringify(demoUser.user));
-        localStorage.setItem('token', demoUser.token);
-        localStorage.setItem('userId', demoUser.user._id);
-        
-        setUser(demoUser.user);
-        toast.success(`Welcome back, ${demoUser.user.name}!`);
-        return;
+      // Call auth service to sign in
+      const response = await authService.signIn(credentials);
+
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Sign in failed');
       }
 
-      // If not demo user, try API login
-      try {
-        const response = await apiService.login(credentials);
-        
-        // Store user and token
-        localStorage.setItem('user', JSON.stringify(response.user));
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('userId', response.user._id);
-        
-        setUser(response.user);
-        toast.success(`Welcome back, ${response.user.name}!`);
-      } catch (apiError: any) {
-        const errorMessage = apiError.response?.data?.message || 'Login failed. Please check your credentials.';
-        toast.error(errorMessage);
-        throw apiError;
-      }
+      const { user: userData, token } = response.data;
+
+      // Store authentication data
+      storage.setToken(token);
+      storage.setUser(userData);
+      storage.setUserId(userData.id);
+
+      // Update state
+      setUser(userData);
+
+      // Show success message
+      const userName = userData.name || userData.username || userData.email;
+      toast.success(`Welcome back, ${userName}!`);
     } catch (error: any) {
-      // If it's not an API error, it's a demo login error
-      if (!error.response) {
-        toast.error('Invalid email or password. Use demo credentials: student@campus.edu / password');
-        throw error;
-      }
+      // Error message is already formatted by authService
+      const errorMessage = error.message || 'Sign in failed. Please check your credentials.';
+      toast.error(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
+   * Sign out current user
+   */
+  const signOut = useCallback(() => {
+    try {
+      // Clear storage
+      storage.clearAuth();
+
+      // Clear state
+      setUser(null);
+
+      // Show success message
+      toast.success('Signed out successfully');
+    } catch (error) {
+      console.error('Error during sign out:', error);
+      // Still clear state even if storage clear fails
+      setUser(null);
+    }
+  }, []);
+
+  /**
+   * Refresh user data from API
+   */
+  const refreshUser = useCallback(async (): Promise<void> => {
+    try {
+      const userData = await authService.getCurrentUser();
+      storage.setUser(userData);
+      storage.setUserId(userData.id);
+      setUser(userData);
+    } catch (error: any) {
+      console.error('Error refreshing user:', error);
+      // If refresh fails, sign out user
+      signOut();
       throw error;
     }
-  };
+  }, [signOut]);
 
-  const logout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    setUser(null);
-    toast.success('Logged out successfully');
-  };
-
-  const hasRole = (roles: UserRole[]): boolean => {
+  /**
+   * Check if user has one of the specified roles
+   * 
+   * @param roles - Array of roles to check
+   * @returns True if user has one of the roles, false otherwise
+   */
+  const hasRole = useCallback((roles: UserRole[]): boolean => {
     if (!user) return false;
     return roles.includes(user.role);
+  }, [user]);
+
+  const value: AuthContextType = {
+    user,
+    loading,
+    signIn,
+    signOut,
+    isAuthenticated: !!user,
+    hasRole,
+    refreshUser,
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        login,
-        logout,
-        isAuthenticated: !!user,
-        hasRole,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

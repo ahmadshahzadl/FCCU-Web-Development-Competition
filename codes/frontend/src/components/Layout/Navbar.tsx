@@ -8,12 +8,12 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
 
 
   const handleLogout = () => {
-    logout();
+    signOut();
     setUserMenuOpen(false);
   };
 
@@ -78,7 +78,7 @@ const Navbar = () => {
                   </div>
                   <div className="text-left hidden lg:block">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {user.name}
+                      {user.name || user.username}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
                       {user.role}
@@ -89,7 +89,7 @@ const Navbar = () => {
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 py-1 z-50">
                     <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-800">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{user.name || user.username}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
                       <p className="text-xs text-primary-600 dark:text-primary-400 capitalize mt-1">
                         {user.role}
@@ -141,7 +141,7 @@ const Navbar = () => {
           <div className="md:hidden py-3 space-y-1 border-t border-gray-200/50 dark:border-gray-800/50 transition-colors duration-300">
             <div className="px-4 py-2">
               <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                {user?.name} ({user?.role})
+                {user?.name || user?.username} ({user?.role})
               </div>
               <button
                 onClick={handleLogout}
