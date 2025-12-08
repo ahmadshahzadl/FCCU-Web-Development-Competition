@@ -3,6 +3,7 @@ import { UserService } from './User.service';
 import { asyncHandler, ValidationError } from '../../middleware/errorHandler';
 import type { CreateUserInput, UpdateUserInput } from '../auth/types';
 import { validateAndSanitizeEmail, validatePassword } from '../auth/Auth.validation';
+import mongoose from 'mongoose';
 
 export class UserController {
   private userService: UserService;
@@ -10,6 +11,79 @@ export class UserController {
   constructor() {
     this.userService = new UserService();
   }
+
+  getCurrentUser = asyncHandler(
+    async (req: Request, res: Response, _next: NextFunction) => {
+      if (!req.user) {
+        throw new ValidationError('User not authenticated');
+      }
+
+      const user = await this.userService.getCurrentUser(req.user.id);
+
+      res.status(200).json({
+        success: true,
+        data: user,
+      });
+    }
+  );
+
+  updateCurrentUser = asyncHandler(
+    async (req: Request, res: Response, _next: NextFunction) => {
+      if (!req.user) {
+        throw new ValidationError('User not authenticated');
+      }
+
+      const { password, name }: UpdateUserInput = req.body;
+      const currentUserRole = req.user.role;
+
+      // Only admin can update email or username
+      if (req.body.email || req.body.username) {
+        if (currentUserRole !== 'admin') {
+          throw new ValidationError('Email and username cannot be changed');
+        }
+      }
+
+      // No one can update their own role via profile endpoint
+      if (req.body.role) {
+        throw new ValidationError('Role cannot be changed via profile endpoint');
+      }
+
+      const updateData: UpdateUserInput = {};
+
+      if (password) {
+        updateData.password = validatePassword(password);
+      }
+
+      if (name !== undefined) {
+        updateData.name = name?.trim();
+      }
+
+      // Allow email/username update for admin only
+      if (req.body.email && currentUserRole === 'admin') {
+        updateData.email = validateAndSanitizeEmail(req.body.email);
+      }
+
+      if (req.body.username && currentUserRole === 'admin') {
+        const sanitizedUsername = req.body.username.trim().toLowerCase();
+        if (sanitizedUsername.length < 3) {
+          throw new ValidationError('Username must be at least 3 characters long');
+        }
+        updateData.username = sanitizedUsername;
+      }
+
+      const updatedUser = await this.userService.updateCurrentUser(
+        req.user.id,
+        updateData,
+        currentUserRole
+      );
+
+      res.status(200).json({
+        success: true,
+        data: updatedUser,
+        message: 'Profile updated successfully',
+      });
+    }
+  );
 
   getAllUsers = asyncHandler(
     async (req: Request, res: Response, _next: NextFunction) => {
@@ -43,6 +117,11 @@ export class UserController {
 
       if (!req.user) {
         throw new ValidationError('User not authenticated');
+      }
+
+      // Validate ObjectId format
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ValidationError(`Invalid user ID: ${id}`);
       }
 
       const user = await this.userService.getUserById(id, req.user.role);
@@ -113,6 +192,11 @@ export class UserController {
         throw new ValidationError('User not authenticated');
       }
 
+      // Validate ObjectId format
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ValidationError(`Invalid user ID: ${id}`);
+      }
+
       const updateData: UpdateUserInput = {};
 
       if (email) {
@@ -163,6 +247,11 @@ export class UserController {
 
       if (!req.user) {
         throw new ValidationError('User not authenticated');
+      }
+
+      // Validate ObjectId format
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ValidationError(`Invalid user ID: ${id}`);
       }
 
       await this.userService.deleteUser(id, req.user.role);

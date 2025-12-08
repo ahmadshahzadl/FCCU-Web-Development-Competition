@@ -55,6 +55,83 @@ export class UserService {
     };
   }
 
+  // Get current user profile
+  async getCurrentUser(userId: string): Promise<IUser> {
+    const user = await User.findById(userId).select('-password');
+
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    return user;
+  }
+
+  // Update current user profile
+  async updateCurrentUser(
+    userId: string,
+    updateData: UpdateUserInput,
+    currentUserRole: UserRole
+  ): Promise<IUser> {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    // Prevent updating God User
+    if (
+      user.email.toLowerCase() === env.GOD_USER_EMAIL.toLowerCase() ||
+      user.username.toLowerCase() === env.GOD_USER_USERNAME.toLowerCase()
+    ) {
+      throw new ValidationError('Cannot update God User');
+    }
+
+    // Only admin can update email or username
+    if (currentUserRole !== 'admin') {
+      if (updateData.email || updateData.username) {
+        throw new ValidationError('Email and username cannot be changed');
+      }
+    }
+
+    // Check if email is being updated and already exists
+    if (updateData.email && updateData.email.toLowerCase() !== user.email) {
+      const existingEmail = await User.findOne({
+        email: updateData.email.toLowerCase(),
+      });
+      if (existingEmail) {
+        throw new ConflictError('Email already exists');
+      }
+      updateData.email = updateData.email.toLowerCase();
+    }
+
+    // Check if username is being updated and already exists
+    if (updateData.username && updateData.username.toLowerCase() !== user.username) {
+      const existingUsername = await User.findOne({
+        username: updateData.username.toLowerCase(),
+      });
+      if (existingUsername) {
+        throw new ConflictError('Username already exists');
+      }
+      updateData.username = updateData.username.toLowerCase();
+    }
+
+    // Hash password if being updated
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 12);
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+      runValidators: true,
+    }).select('-password');
+
+    if (!updatedUser) {
+      throw new NotFoundError('User not found');
+    }
+
+    return updatedUser;
+  }
+
   // Get user by ID
   async getUserById(id: string, currentUserRole: UserRole): Promise<IUser> {
     const user = await User.findById(id).select('-password');
