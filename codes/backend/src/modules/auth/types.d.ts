@@ -2,12 +2,17 @@
  * Auth Module Type Definitions
  */
 
+// User Role type
+export type UserRole = 'admin' | 'manager' | 'team' | 'student';
+
 // User-related types
 export interface IUser {
   _id: string;
   email: string;
+  username: string;
   password: string;
   name?: string;
+  role: UserRole;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,7 +27,9 @@ export interface SignInResponse {
   user: {
     id: string;
     email: string;
+    username: string;
     name?: string;
+    role: UserRole;
   };
   token: string;
 }
@@ -49,6 +56,7 @@ export interface AuthErrorResponse {
 // JWT Payload type
 export interface JWTPayload {
   userId: string;
+  role: UserRole;
   iat?: number;
   exp?: number;
 }
@@ -57,6 +65,26 @@ export interface JWTPayload {
 export interface PublicUserData {
   id: string;
   email: string;
+  username: string;
   name?: string;
+  role: UserRole;
+}
+
+// Create User Input
+export interface CreateUserInput {
+  email: string;
+  username: string;
+  password: string;
+  name?: string;
+  role: UserRole;
+}
+
+// Update User Input
+export interface UpdateUserInput {
+  email?: string;
+  username?: string;
+  password?: string;
+  name?: string;
+  role?: UserRole;
 }
 

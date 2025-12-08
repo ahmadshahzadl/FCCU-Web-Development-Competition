@@ -1,10 +1,14 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+export type UserRole = 'admin' | 'manager' | 'team' | 'student';
+
 export interface IUser extends Document {
   email: string;
+  username: string;
   password: string;
   name?: string;
+  role: UserRole;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -19,6 +23,13 @@ const UserSchema: Schema = new Schema(
       lowercase: true,
       trim: true,
     },
+    username: {
+      type: String,
+      required: [true, 'Username is required'],
+      unique: true,
+      trim: true,
+      lowercase: true,
+    },
     password: {
       type: String,
       required: [true, 'Password is required'],
@@ -27,6 +38,12 @@ const UserSchema: Schema = new Schema(
     name: {
       type: String,
       trim: true,
+    },
+    role: {
+      type: String,
+      enum: ['admin', 'manager', 'team', 'student'],
+      required: [true, 'Role is required'],
+      default: 'student',
     },
   },
   {
@@ -58,7 +75,8 @@ UserSchema.methods.comparePassword = async function (
 };
 
 // Indexes
-UserSchema.index({ email: 1 }, { unique: true });
+// Note: email and username indexes are created automatically by unique: true
+UserSchema.index({ role: 1 });
 
 export const User = mongoose.model<IUser>('User', UserSchema);
 

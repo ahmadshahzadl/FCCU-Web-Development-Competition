@@ -30,23 +30,25 @@ export class AuthService {
     }
 
     // Generate JWT token
-    const token = this.generateToken(user._id.toString());
+    const token = this.generateToken(user._id.toString(), user.role);
 
     // Return user data (without password) and token
     return {
       user: {
         id: user._id.toString(),
         email: user.email,
+        username: user.username,
         name: user.name,
+        role: user.role,
       },
       token,
     };
   }
 
   // Generate JWT token
-  private generateToken(userId: string): string {
+  private generateToken(userId: string, role: string): string {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return jwt.sign({ userId }, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN } as any);
+    return jwt.sign({ userId, role }, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN } as any);
   }
 
   // Get user by ID (for future use, e.g., getting current user)

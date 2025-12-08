@@ -2,6 +2,7 @@ import { Router } from 'express';
 import RequestRoutesInstance from '../modules/request/Request.routes';
 import AnnouncementRoutesInstance from '../modules/announcement/Announcement.routes';
 import AuthRoutesInstance from '../modules/auth/Auth.routes';
+import UserRoutesInstance from '../modules/user/User.routes';
 // Import other module routes here as they are created
 // import ChatRoutesInstance from '../modules/chat/Chat.routes';
 // import AnalyticsRoutesInstance from '../modules/analytics/Analytics.routes';
@@ -16,8 +17,11 @@ class ApiRoutes {
   }
 
   private initializeRoutes(): void {
-    // Auth Routes
+    // Auth Routes (public)
     this.router.use('/auth', AuthRoutesInstance);
+    
+    // User Routes (protected)
+    this.router.use('/users', UserRoutesInstance);
     
     // API Routes
     this.router.use('/requests', RequestRoutesInstance);
