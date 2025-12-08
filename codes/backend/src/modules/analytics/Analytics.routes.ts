@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { AnalyticsController } from './Analytics.controller';
 import { authenticate, authorize } from '../../middleware/auth.middleware';
+import { lenientLimiter } from '../../middleware';
 
 export class AnalyticsRoutes {
   private router: Router;
@@ -17,19 +18,20 @@ export class AnalyticsRoutes {
     this.router.use(authenticate);
 
     // Get request statistics
-    this.router.get('/statistics', this.controller.getRequestStatistics);
+    // Use lenient limiter since analytics endpoints are frequently accessed (dashboards, charts, etc.)
+    this.router.get('/statistics', lenientLimiter, this.controller.getRequestStatistics);
 
     // Get current month category chart (bar chart)
-    this.router.get('/charts/category', this.controller.getCurrentMonthCategoryChart);
+    this.router.get('/charts/category', lenientLimiter, this.controller.getCurrentMonthCategoryChart);
 
     // Get current month status chart
-    this.router.get('/charts/status', this.controller.getCurrentMonthStatusChart);
+    this.router.get('/charts/status', lenientLimiter, this.controller.getCurrentMonthStatusChart);
 
     // Get current month daily chart
-    this.router.get('/charts/daily', this.controller.getCurrentMonthDailyChart);
+    this.router.get('/charts/daily', lenientLimiter, this.controller.getCurrentMonthDailyChart);
 
     // Get complete analytics summary
-    this.router.get('/summary', this.controller.getAnalyticsSummary);
+    this.router.get('/summary', lenientLimiter, this.controller.getAnalyticsSummary);
   }
 
   public getRouter(): Router {

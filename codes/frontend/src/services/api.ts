@@ -220,54 +220,61 @@ class ApiService {
 
   // Get user's announcements
   async getUserAnnouncements(): Promise<Announcement[]> {
-    const response = await apiClient.get<{ success: true; data: Announcement[] }>('/announcements/me');
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<Announcement[]>('/announcements/me');
+    return response.data;
   }
 
   // Get unread announcements
   async getUnreadAnnouncements(): Promise<Announcement[]> {
-    const response = await apiClient.get<{ success: true; data: Announcement[] }>('/announcements/me/unread');
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<Announcement[]>('/announcements/me/unread');
+    return response.data;
   }
 
   // Get unread count
   async getUnreadCount(): Promise<number> {
-    const response = await apiClient.get<{ success: true; data: { count: number } }>('/announcements/me/unread-count');
-    return response.data.data.count;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<{ count: number }>('/announcements/me/unread-count');
+    return response.data.count;
   }
 
   // Mark announcement as read
   async markAnnouncementAsRead(id: string): Promise<Announcement> {
-    const response = await apiClient.put<{ success: true; data: Announcement; message: string }>(`/announcements/${id}/read`);
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.put<Announcement>(`/announcements/${id}/read`);
+    return response.data;
   }
 
   // Mark all announcements as read
   async markAllAnnouncementsAsRead(): Promise<void> {
-    await apiClient.put<{ success: true; message: string }>('/announcements/me/read-all');
+    await apiClient.put<void>('/announcements/me/read-all');
   }
 
   // Create announcement (admin/manager only)
   async createAnnouncement(data: CreateAnnouncementData): Promise<Announcement> {
-    const response = await apiClient.post<{ success: true; data: Announcement; message: string }>('/announcements', data);
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.post<Announcement>('/announcements', data);
+    return response.data;
   }
 
   // Get all announcements (admin/manager only)
   async getAllAnnouncements(): Promise<Announcement[]> {
-    const response = await apiClient.get<{ success: true; data: Announcement[] }>('/announcements');
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<Announcement[]>('/announcements');
+    return response.data;
   }
 
   // Delete announcement (admin/manager only)
   async deleteAnnouncement(id: string): Promise<void> {
-    await apiClient.delete<{ success: true; message: string }>(`/announcements/${id}`);
+    await apiClient.delete<void>(`/announcements/${id}`);
   }
 
   // Get announcement by ID
   async getAnnouncementById(id: string): Promise<Announcement> {
-    const response = await apiClient.get<{ success: true; data: Announcement }>(`/announcements/${id}`);
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<Announcement>(`/announcements/${id}`);
+    return response.data;
   }
 
   // Legacy method for backward compatibility
@@ -464,49 +471,55 @@ class ApiService {
 
   // System Configuration Methods (Admin Only)
   async getSystemConfig(): Promise<SystemConfig> {
-    const response = await apiClient.get<{ success: true; data: SystemConfig }>('/system-config');
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<SystemConfig>('/system-config');
+    return response.data;
   }
 
   async updateProjectName(data: UpdateProjectNameRequest): Promise<SystemConfig> {
-    const response = await apiClient.put<{ success: true; data: SystemConfig; message: string }>(
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.put<SystemConfig>(
       '/system-config/name',
       data
     );
-    return response.data.data;
+    return response.data;
   }
 
   async updateLogo(data: UpdateLogoRequest): Promise<SystemConfig> {
-    const response = await apiClient.put<{ success: true; data: SystemConfig; message: string }>(
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.put<SystemConfig>(
       '/system-config/logo',
       data
     );
-    return response.data.data;
+    return response.data;
   }
 
   async addEmailDomain(data: AddEmailDomainRequest): Promise<SystemConfig> {
-    const response = await apiClient.post<{ success: true; data: SystemConfig; message: string }>(
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.post<SystemConfig>(
       '/system-config/email-domains',
       data
     );
-    return response.data.data;
+    return response.data;
   }
 
   async removeEmailDomain(data: RemoveEmailDomainRequest): Promise<SystemConfig> {
-    const response = await apiClient.delete<{ success: true; data: SystemConfig; message: string }>(
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.delete<SystemConfig>(
       '/system-config/email-domains',
       { data }
     );
-    return response.data.data;
+    return response.data;
   }
 
   // Public System Configuration (No authentication required)
   async getPublicSystemConfig(): Promise<PublicSystemConfig> {
-    const response = await apiClient.get<{ success: true; data: PublicSystemConfig }>(
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<PublicSystemConfig>(
       '/system-config/public',
       { requiresAuth: false }
     );
-    const result = response.data.data;
+    const result = response.data;
     // Ensure projectName is always present
     return {
       projectName: result.projectName || 'Campus Helper',
@@ -552,13 +565,9 @@ class ApiService {
    * Get complete analytics summary
    */
   async getAnalyticsSummary(): Promise<AnalyticsSummary> {
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
     const response = await apiClient.get<AnalyticsSummary>('/analytics/summary');
-    // Handle both direct response and wrapped response
-    const data = response.data;
-    if (data && typeof data === 'object' && 'data' in data && (data as any).data) {
-      return (data as any).data;
-    }
-    return data;
+    return response.data;
   }
 
   // ==================== AI Chatbot ====================
@@ -574,46 +583,20 @@ class ApiService {
       message,
       conversationHistory,
     };
-    const response = await apiClient.post<AIChatResponse>('/ai/chat', requestData);
-    // Extract response from nested structure
-    const data = response.data;
-    // If response is wrapped in { success: true, data: { response: string } }
-    if (data && typeof data === 'object' && 'data' in data) {
-      const innerData = (data as any).data;
-      if (innerData && typeof innerData === 'object' && 'response' in innerData) {
-        return {
-          success: true,
-          data: {
-            response: innerData.response,
-          },
-        };
-      }
-    }
-    // Return as-is if already in correct format
-    return data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.post<{ response: string }>('/ai/chat', requestData);
+    // Response is already ApiSuccessResponse<{ response: string }> which matches AIChatResponse
+    return response;
   }
 
   /**
    * Get system prompt (admin only)
    */
   async getSystemPrompt(): Promise<SystemPromptResponse> {
-    const response = await apiClient.get<SystemPromptResponse>('/ai/system-prompt');
-    // Extract response from nested structure
-    const data = response.data;
-    // If response is wrapped in { success: true, data: { systemPrompt: string } }
-    if (data && typeof data === 'object' && 'data' in data) {
-      const innerData = (data as any).data;
-      if (innerData && typeof innerData === 'object' && 'systemPrompt' in innerData) {
-        return {
-          success: true,
-          data: {
-            systemPrompt: innerData.systemPrompt,
-          },
-        };
-      }
-    }
-    // Return as-is if already in correct format
-    return data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<{ systemPrompt: string }>('/ai/system-prompt');
+    // Response is already ApiSuccessResponse<{ systemPrompt: string }> which matches SystemPromptResponse
+    return response;
   }
 
   /**
@@ -623,25 +606,10 @@ class ApiService {
     const requestData: UpdateSystemPromptRequest = {
       systemPrompt,
     };
-    const response = await apiClient.put<UpdateSystemPromptResponse>('/ai/system-prompt', requestData);
-    // Extract response from nested structure
-    const data = response.data;
-    // If response is wrapped in { success: true, data: { systemPrompt: string, updatedAt: string }, message: string }
-    if (data && typeof data === 'object' && 'data' in data) {
-      const innerData = (data as any).data;
-      if (innerData && typeof innerData === 'object' && 'systemPrompt' in innerData) {
-        return {
-          success: true,
-          data: {
-            systemPrompt: innerData.systemPrompt,
-            updatedAt: innerData.updatedAt || new Date().toISOString(),
-          },
-          message: (data as any).message || 'System prompt updated successfully',
-        };
-      }
-    }
-    // Return as-is if already in correct format
-    return data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.put<{ systemPrompt: string; updatedAt: string }>('/ai/system-prompt', requestData);
+    // Response is already ApiSuccessResponse<{ systemPrompt: string, updatedAt: string }> which matches UpdateSystemPromptResponse
+    return response;
   }
 }
 

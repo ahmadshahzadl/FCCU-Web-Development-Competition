@@ -4,6 +4,7 @@
  * Displays detailed information about a user in a modal
  */
 
+import { useEffect } from 'react';
 import { X, Mail, Hash, Calendar, Shield, UserCog, Briefcase, GraduationCap, User as UserIcon } from 'lucide-react';
 import { getRoleDisplayName, getRoleBadgeColor } from '@/utils/auth.helpers';
 import type { User } from '@/types';
@@ -15,6 +16,13 @@ interface UserDetailsModalProps {
 }
 
 const UserDetailsModal = ({ user, onClose }: UserDetailsModalProps) => {
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'admin':
@@ -33,8 +41,32 @@ const UserDetailsModal = ({ user, onClose }: UserDetailsModalProps) => {
   const isStudent = user.role === 'student';
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full max-h-[95vh] overflow-y-auto">
+    <>
+      {/* Backdrop overlay - covers full viewport with blur including header */}
+      <div 
+        className="fixed bg-black/50 dark:bg-black/70 z-[9998]"
+        style={{ 
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw', 
+          height: '100vh',
+          minHeight: '100vh',
+          margin: 0,
+          padding: 0,
+          position: 'fixed',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)'
+        }}
+        onClick={onClose}
+      />
+      {/* Modal content */}
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 pointer-events-none">
+        <div 
+          className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full max-h-[95vh] overflow-y-auto pointer-events-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between z-10">
           <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
@@ -166,8 +198,9 @@ const UserDetailsModal = ({ user, onClose }: UserDetailsModalProps) => {
             Close
           </button>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

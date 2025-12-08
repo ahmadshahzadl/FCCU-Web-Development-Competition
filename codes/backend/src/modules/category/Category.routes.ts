@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { CategoryController } from './Category.controller';
 import { authenticate, authorize } from '../../middleware/auth.middleware';
-import { apiLimiter, strictLimiter } from '../../middleware';
+import { lenientLimiter, strictLimiter } from '../../middleware';
 
 export class CategoryRoutes {
   private router: Router;
@@ -15,10 +15,11 @@ export class CategoryRoutes {
 
   private initializeRoutes(): void {
     // Get all categories (public for authenticated users)
-    this.router.get('/', authenticate, apiLimiter, this.controller.getAllCategories);
+    // Use lenient limiter since categories are frequently fetched (forms, dropdowns, etc.)
+    this.router.get('/', authenticate, lenientLimiter, this.controller.getAllCategories);
 
     // Get category by ID (public for authenticated users)
-    this.router.get('/:id', authenticate, apiLimiter, this.controller.getCategoryById);
+    this.router.get('/:id', authenticate, lenientLimiter, this.controller.getCategoryById);
 
     // Create category (admin and manager only)
     this.router.post(

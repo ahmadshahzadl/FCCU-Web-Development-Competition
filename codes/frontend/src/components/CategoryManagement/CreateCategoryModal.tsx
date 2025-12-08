@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import type { CreateCategoryData } from '@/types';
 
@@ -63,11 +63,47 @@ const CreateCategoryModal = ({ isOpen, onSubmit, onClose }: CreateCategoryModalP
     }
   };
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full transition-colors duration-300">
+    <>
+      {/* Backdrop overlay - covers full viewport with blur including header */}
+      <div 
+        className="fixed bg-black/50 dark:bg-black/70 z-[9998]"
+        style={{ 
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw', 
+          height: '100vh',
+          minHeight: '100vh',
+          margin: 0,
+          padding: 0,
+          position: 'fixed',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)'
+        }}
+        onClick={onClose}
+      />
+      {/* Modal content */}
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
+        <div 
+          className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full transition-colors duration-300 pointer-events-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between transition-colors duration-300">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-300">
@@ -158,8 +194,9 @@ const CreateCategoryModal = ({ isOpen, onSubmit, onClose }: CreateCategoryModalP
             </button>
           </div>
         </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
