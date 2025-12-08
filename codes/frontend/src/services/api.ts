@@ -34,6 +34,11 @@ import type {
   AddEmailDomainRequest,
   RemoveEmailDomainRequest,
   PublicSystemConfig,
+  RequestStatistics,
+  CategoryChartData,
+  StatusChartData,
+  DailyChartData,
+  AnalyticsSummary,
 } from '@/types';
 
 /**
@@ -502,6 +507,53 @@ class ApiService {
       projectName: result.projectName || 'Campus Helper',
       logoUrl: result.logoUrl,
     };
+  }
+
+  // ==================== Analytics ====================
+
+  /**
+   * Get request statistics
+   */
+  async getRequestStatistics(): Promise<RequestStatistics> {
+    const response = await apiClient.get<RequestStatistics>('/analytics/statistics');
+    return response.data;
+  }
+
+  /**
+   * Get current month category chart
+   */
+  async getCurrentMonthCategoryChart(): Promise<CategoryChartData> {
+    const response = await apiClient.get<CategoryChartData>('/analytics/charts/category');
+    return response.data;
+  }
+
+  /**
+   * Get current month status chart
+   */
+  async getCurrentMonthStatusChart(): Promise<StatusChartData> {
+    const response = await apiClient.get<StatusChartData>('/analytics/charts/status');
+    return response.data;
+  }
+
+  /**
+   * Get current month daily chart
+   */
+  async getCurrentMonthDailyChart(): Promise<DailyChartData> {
+    const response = await apiClient.get<DailyChartData>('/analytics/charts/daily');
+    return response.data;
+  }
+
+  /**
+   * Get complete analytics summary
+   */
+  async getAnalyticsSummary(): Promise<AnalyticsSummary> {
+    const response = await apiClient.get<AnalyticsSummary>('/analytics/summary');
+    // Handle both direct response and wrapped response
+    const data = response.data;
+    if (data && typeof data === 'object' && 'data' in data && (data as any).data) {
+      return (data as any).data;
+    }
+    return data;
   }
 }
 

@@ -8,7 +8,6 @@ import Layout from './components/Layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Unauthorized from './pages/Unauthorized';
-import Home from './pages/Home';
 import ServiceRequest from './pages/ServiceRequest';
 import Dashboard from './pages/Dashboard';
 import Map from './pages/Map';
@@ -106,6 +105,17 @@ const ToasterWithTheme = () => {
   );
 };
 
+const RoleBasedRedirect = () => {
+  const { user } = useAuth();
+  
+  if (user?.role === 'admin' || user?.role === 'manager') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  // For students and team, redirect to announcements
+  return <Navigate to="/announcements" replace />;
+};
+
 const AppRoutes = () => {
   const { isAuthenticated, loading } = useAuth();
 
@@ -130,14 +140,12 @@ const AppRoutes = () => {
       <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
-      {/* Protected Routes - Student Access */}
+      {/* Protected Routes - Redirect based on role */}
       <Route
         path="/"
         element={
           <ProtectedRoute allowedRoles={['student', 'admin', 'team', 'manager']}>
-            <Layout>
-              <Home />
-            </Layout>
+            <RoleBasedRedirect />
           </ProtectedRoute>
         }
       />
