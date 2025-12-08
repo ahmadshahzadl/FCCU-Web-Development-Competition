@@ -16,6 +16,7 @@ import type {
   CreateCategoryData,
   UpdateCategoryData,
   Announcement,
+  CreateAnnouncementData,
   Chat,
   ChatMessage,
   AnalyticsOverview,
@@ -199,20 +200,61 @@ class ApiService {
 
   // ==================== Announcements ====================
 
-  /**
-   * Get all announcements
-   */
-  async getAnnouncements(): Promise<Announcement[]> {
-    const response = await apiClient.get<Announcement[]>('/announcements');
+  // Get user's announcements
+  async getUserAnnouncements(): Promise<Announcement[]> {
+    const response = await apiClient.get<{ success: true; data: Announcement[] }>('/announcements/me');
     return response.data;
   }
 
-  /**
-   * Get a single announcement by ID
-   */
-  async getAnnouncementById(id: string): Promise<Announcement> {
-    const response = await apiClient.get<Announcement>(`/announcements/${id}`);
+  // Get unread announcements
+  async getUnreadAnnouncements(): Promise<Announcement[]> {
+    const response = await apiClient.get<{ success: true; data: Announcement[] }>('/announcements/me/unread');
     return response.data;
+  }
+
+  // Get unread count
+  async getUnreadCount(): Promise<number> {
+    const response = await apiClient.get<{ success: true; data: { count: number } }>('/announcements/me/unread-count');
+    return response.data.count;
+  }
+
+  // Mark announcement as read
+  async markAnnouncementAsRead(id: string): Promise<Announcement> {
+    const response = await apiClient.put<{ success: true; data: Announcement; message: string }>(`/announcements/${id}/read`);
+    return response.data;
+  }
+
+  // Mark all announcements as read
+  async markAllAnnouncementsAsRead(): Promise<void> {
+    await apiClient.put<{ success: true; message: string }>('/announcements/me/read-all');
+  }
+
+  // Create announcement (admin/manager only)
+  async createAnnouncement(data: CreateAnnouncementData): Promise<Announcement> {
+    const response = await apiClient.post<{ success: true; data: Announcement; message: string }>('/announcements', data);
+    return response.data;
+  }
+
+  // Get all announcements (admin/manager only)
+  async getAllAnnouncements(): Promise<Announcement[]> {
+    const response = await apiClient.get<{ success: true; data: Announcement[] }>('/announcements');
+    return response.data;
+  }
+
+  // Delete announcement (admin/manager only)
+  async deleteAnnouncement(id: string): Promise<void> {
+    await apiClient.delete<{ success: true; message: string }>(`/announcements/${id}`);
+  }
+
+  // Get announcement by ID
+  async getAnnouncementById(id: string): Promise<Announcement> {
+    const response = await apiClient.get<{ success: true; data: Announcement }>(`/announcements/${id}`);
+    return response.data;
+  }
+
+  // Legacy method for backward compatibility
+  async getAnnouncements(): Promise<Announcement[]> {
+    return this.getUserAnnouncements();
   }
 
   // ==================== Chat ====================

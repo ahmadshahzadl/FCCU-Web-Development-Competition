@@ -66,8 +66,9 @@ export interface CreateRequestDto {
 }
 
 // Announcement Types
-export type AnnouncementType = 'notice' | 'event' | 'cancellation';
+export type AnnouncementType = 'notice' | 'event' | 'cancellation' | 'request-update';
 export type AnnouncementPriority = 'high' | 'medium' | 'low';
+export type AnnouncementTarget = 'all' | 'roles' | 'users';
 
 export interface Announcement {
   _id: string;
@@ -75,7 +76,33 @@ export interface Announcement {
   content: string;
   type: AnnouncementType;
   priority: AnnouncementPriority;
+  target: AnnouncementTarget;
+  targetRoles?: UserRole[];
+  targetUserIds?: string[];
+  createdBy: string;
+  createdByRole: UserRole;
+  relatedRequestId?: string;
+  readBy?: string[];
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAnnouncementData {
+  title: string;
+  content: string;
+  type?: AnnouncementType;
+  priority?: AnnouncementPriority;
+  target: AnnouncementTarget;
+  targetRoles?: UserRole[];
+  targetUserIds?: string[];
+}
+
+export interface AnnouncementCreatedPayload {
+  announcement: Announcement;
+}
+
+export interface AnnouncementDeletedPayload {
+  announcementId: string;
 }
 
 // Chat Types

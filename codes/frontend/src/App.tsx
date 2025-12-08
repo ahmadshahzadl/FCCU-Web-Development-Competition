@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SystemConfigProvider } from './contexts/SystemConfigContext';
+import { AnnouncementProvider } from './contexts/AnnouncementContext';
 import Layout from './components/Layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -288,11 +289,13 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <SystemConfigProvider>
-          <Router>
-            <AppRoutes />
-            <Chatbot />
-            <ToasterWithTheme />
-          </Router>
+          <AnnouncementProvider>
+            <Router>
+              <AppRoutes />
+              <Chatbot />
+              <ToasterWithTheme />
+            </Router>
+          </AnnouncementProvider>
         </SystemConfigProvider>
       </AuthProvider>
     </ThemeProvider>

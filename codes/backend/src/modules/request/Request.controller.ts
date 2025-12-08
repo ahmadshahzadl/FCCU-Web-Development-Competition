@@ -2,12 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import { RequestService } from './Request.service';
 import { asyncHandler, ValidationError } from '../../middleware/errorHandler';
 import { getSocketService, SocketEvents } from '../../utils/socket';
+import { AnnouncementService } from '../announcement/Announcement.service';
 
 export class RequestController {
   private requestService: RequestService;
+  private announcementService: AnnouncementService;
 
   constructor() {
     this.requestService = new RequestService();
+    this.announcementService = new AnnouncementService();
   }
 
   getRequests = asyncHandler(
@@ -146,6 +149,39 @@ export class RequestController {
       } catch (error) {
         // Socket error shouldn't break the status update
         console.error('Failed to emit socket event:', error);
+      }
+
+      // Create announcement if team member updates request status
+      if (req.user?.role === 'team' && request.studentId) {
+        try {
+          const announcementTitle = `Request Status Updated`;
+          const announcementContent = `Your request "${request.description.substring(0, 50)}${request.description.length > 50 ? '...' : ''}" status has been updated to ${status}.${adminNotes ? `\n\nNotes: ${adminNotes}` : ''}`;
+
+          const announcement = await this.announcementService.createAnnouncement(
+            {
+              title: announcementTitle,
+              content: announcementContent,
+              type: 'request-update',
+              priority: status === 'resolved' ? 'high' : 'medium',
+              target: 'users',
+              targetUserIds: [request.studentId],
+              relatedRequestId: request._id.toString(),
+            },
+            req.user.username,
+            req.user.role
+          );
+
+          // Emit socket event for announcement
+          try {
+            const socketService = getSocketService();
+            socketService.notifyAnnouncementCreated(announcement);
+          } catch (error) {
+            console.error('Failed to emit announcement socket event:', error);
+          }
+        } catch (error) {
+          // Announcement creation failure shouldn't break request update
+          console.error('Failed to create announcement:', error);
+        }
       }
 
       res.status(200).json({

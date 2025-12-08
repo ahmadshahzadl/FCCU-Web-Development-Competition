@@ -29,7 +29,7 @@ class ApiRoutes {
     
     // API Routes
     this.router.use('/requests', RequestRoutesInstance);
-    // this.router.use('/announcements', AnnouncementRoutesInstance);
+    this.router.use('/announcements', AnnouncementRoutesInstance);
     // this.router.use('/chat', ChatRoutesInstance);
     // this.router.use('/analytics', AnalyticsRoutesInstance);
     // this.router.use('/notifications', NotificationRoutesInstance);

@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import type { ChatMessage, Notification, ServiceRequest } from '@/types';
+import type { ChatMessage, Notification, ServiceRequest, Announcement, AnnouncementCreatedPayload, AnnouncementDeletedPayload } from '@/types';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
 
@@ -275,6 +275,44 @@ class SocketService {
     if (this.socket) {
       this.socket.off('connect', () => callback(true));
       this.socket.off('disconnect', () => callback(false));
+    }
+  }
+
+  // ==================== Announcements ====================
+
+  // Listen for announcement created
+  onAnnouncementCreated(callback: (payload: AnnouncementCreatedPayload) => void): void {
+    if (this.socket) {
+      this.socket.on('announcement:created', callback);
+    }
+  }
+
+  // Listen for announcement deleted
+  onAnnouncementDeleted(callback: (payload: AnnouncementDeletedPayload) => void): void {
+    if (this.socket) {
+      this.socket.on('announcement:deleted', callback);
+    }
+  }
+
+  // Remove announcement created listener
+  offAnnouncementCreated(callback?: (payload: AnnouncementCreatedPayload) => void): void {
+    if (this.socket) {
+      if (callback) {
+        this.socket.off('announcement:created', callback);
+      } else {
+        this.socket.off('announcement:created');
+      }
+    }
+  }
+
+  // Remove announcement deleted listener
+  offAnnouncementDeleted(callback?: (payload: AnnouncementDeletedPayload) => void): void {
+    if (this.socket) {
+      if (callback) {
+        this.socket.off('announcement:deleted', callback);
+      } else {
+        this.socket.off('announcement:deleted');
+      }
     }
   }
 }

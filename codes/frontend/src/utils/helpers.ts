@@ -48,10 +48,11 @@ export const getCategoryLabel = (category: RequestCategory): string => {
 
 // Get announcement type label
 export const getAnnouncementTypeLabel = (type: AnnouncementType): string => {
-  const labels = {
+  const labels: Record<AnnouncementType, string> = {
     notice: 'Notice',
     event: 'Event',
     cancellation: 'Cancellation',
+    'request-update': 'Request Update',
   };
   return labels[type] || type;
 };
@@ -78,7 +79,7 @@ export const debounce = <T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
   return (...args: Parameters<T>) => {
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);

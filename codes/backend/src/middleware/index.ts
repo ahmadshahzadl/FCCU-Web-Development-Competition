@@ -34,7 +34,7 @@ export const signinLimiter = rateLimit({
 // General API rate limiter (increased limit)
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // Increased from 50 to 200 requests per 15 minutes
+  max: 300, // Increased to 300 requests per 15 minutes
   message: 'Too many API requests, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -58,6 +58,15 @@ export const strictLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Lenient rate limiter for frequently polled endpoints (unread count, notifications, etc.)
+export const lenientLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // Allow 500 requests per 15 minutes for frequently polled endpoints
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Apply all middleware to the Express app
 export const setupMiddleware = (app: Express): void => {
   // Security middleware
@@ -70,10 +79,10 @@ export const setupMiddleware = (app: Express): void => {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-  // Rate limiting - Apply general API limiter (more lenient now)
-  app.use('/api/', apiLimiter);
+  // Note: Rate limiting is applied per-route, not globally
+  // This prevents double rate limiting and allows different limits for different endpoints
   
-  // Apply general limiter to all routes
+  // Apply general limiter to non-API routes only
   app.use(limiter);
 
   // Request logging middleware (in development)

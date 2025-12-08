@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import { IRequest } from '../modules/request/Request.model';
+import { IAnnouncement } from '../modules/announcement/Announcement.model';
 
 // Socket event names
 export enum SocketEvents {
@@ -12,6 +13,10 @@ export enum SocketEvents {
   // User-specific events
   USER_REQUEST_UPDATED = 'user:request_updated', // For student's own request updates
   REQUEST_RESOLVED = 'request:resolved', // For team members viewing a request
+
+  // Announcement events
+  ANNOUNCEMENT_CREATED = 'announcement:created',
+  ANNOUNCEMENT_DELETED = 'announcement:deleted',
 }
 
 // Socket event payloads
@@ -34,6 +39,14 @@ export interface RequestStatusUpdatedPayload {
 export interface RequestDeletedPayload {
   requestId: string;
   deletedBy?: string;
+}
+
+export interface AnnouncementCreatedPayload {
+  announcement: IAnnouncement;
+}
+
+export interface AnnouncementDeletedPayload {
+  announcementId: string;
 }
 
 // Socket service class
@@ -202,6 +215,54 @@ export class SocketService {
       console.log(`[Socket] Emitted request:deleted for request ${requestId}`);
     } catch (error) {
       console.error('[Socket] Error emitting request:deleted:', error);
+    }
+  }
+
+  // Announcement created - notify targeted users
+  notifyAnnouncementCreated(announcement: IAnnouncement): void {
+    try {
+      const announcementData = announcement.toObject ? announcement.toObject() : announcement;
+      const payload: AnnouncementCreatedPayload = {
+        announcement: announcementData as IAnnouncement,
+      };
+
+      console.log(`[Socket] Emitting announcement:created - Target: ${announcementData.target}`);
+
+      if (announcementData.target === 'all') {
+        // Broadcast to all connected users
+        this.io.emit(SocketEvents.ANNOUNCEMENT_CREATED, payload);
+        console.log(`[Socket] Emitted to all users`);
+      } else if (announcementData.target === 'roles' && announcementData.targetRoles) {
+        // Emit to specific role rooms
+        announcementData.targetRoles.forEach((role: string) => {
+          this.io.to(`role:${role}`).emit(SocketEvents.ANNOUNCEMENT_CREATED, payload);
+          console.log(`[Socket] Emitted to role:${role}`);
+        });
+      } else if (announcementData.target === 'users' && announcementData.targetUserIds) {
+        // Emit to specific users
+        announcementData.targetUserIds.forEach((userId: string) => {
+          this.emitToUser(userId, SocketEvents.ANNOUNCEMENT_CREATED, payload);
+          console.log(`[Socket] Emitted to user:${userId}`);
+        });
+      }
+
+      console.log(`[Socket] Successfully emitted announcement:created for announcement ${announcementData._id}`);
+    } catch (error) {
+      console.error('[Socket] Error emitting announcement:created:', error);
+    }
+  }
+
+  // Announcement deleted - notify all users
+  notifyAnnouncementDeleted(announcementId: string): void {
+    try {
+      const payload: AnnouncementDeletedPayload = { announcementId };
+      
+      // Notify all users about deletion
+      this.io.emit(SocketEvents.ANNOUNCEMENT_DELETED, payload);
+      
+      console.log(`[Socket] Emitted announcement:deleted for announcement ${announcementId}`);
+    } catch (error) {
+      console.error('[Socket] Error emitting announcement:deleted:', error);
     }
   }
 }

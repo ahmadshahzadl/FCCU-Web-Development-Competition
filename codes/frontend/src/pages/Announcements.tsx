@@ -1,29 +1,154 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { apiService } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAnnouncements } from '@/contexts/AnnouncementContext';
+import { useSocket } from '@/hooks/useSocket';
 import { toast } from 'react-hot-toast';
 import type { Announcement, AnnouncementType } from '@/types';
-import { getAnnouncementTypeLabel, formatDate, getPriorityColor } from '@/utils/helpers';
-import { Bell, Filter } from 'lucide-react';
+import { usePageTitle } from '@/hooks/usePageTitle';
+import CreateAnnouncementModal from '@/components/Announcements/CreateAnnouncementModal';
+import AnnouncementsHeader from '@/components/Announcements/AnnouncementsHeader';
+import AnnouncementsFilters from '@/components/Announcements/AnnouncementsFilters';
+import AnnouncementsList from '@/components/Announcements/AnnouncementsList';
+import AnnouncementsLoading from '@/components/Announcements/AnnouncementsLoading';
 
 const Announcements = () => {
+  const { user } = useAuth();
+  const { unreadCount, markAsRead, markAllAsRead, refreshUnreadCount } = useAnnouncements();
+  const socket = useSocket();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [filter, setFilter] = useState<AnnouncementType | 'all'>('all');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const isAdminOrManager = user?.role === 'admin' || user?.role === 'manager';
 
-  useEffect(() => {
-    fetchAnnouncements();
-  }, []);
+  usePageTitle('Announcements');
 
-  const fetchAnnouncements = async () => {
-    setLoading(true);
+  const loadAnnouncements = useCallback(async () => {
     try {
-      const data = await apiService.getAnnouncements();
-      setAnnouncements(data);
+      setLoading(true);
+      const response = showUnreadOnly
+        ? await apiService.getUnreadAnnouncements()
+        : await apiService.getUserAnnouncements();
+      setAnnouncements(response);
     } catch (error: any) {
-      toast.error('Failed to fetch announcements');
+      toast.error('Failed to load announcements');
       console.error('Error fetching announcements:', error);
     } finally {
       setLoading(false);
+    }
+  }, [showUnreadOnly]);
+
+  useEffect(() => {
+    loadAnnouncements();
+  }, [loadAnnouncements]);
+
+  // Setup socket listeners for real-time updates
+  useEffect(() => {
+    if (!socket || !user) return;
+
+    const handleAnnouncementCreated = (payload: { announcement: Announcement }) => {
+      const { announcement } = payload;
+
+      // Check if announcement is for current user
+      const isForUser =
+        announcement.target === 'all' ||
+        (announcement.target === 'roles' &&
+          announcement.targetRoles?.includes(user.role)) ||
+        (announcement.target === 'users' &&
+          announcement.targetUserIds?.includes(user.id || ''));
+
+      if (isForUser) {
+        // Add to list if not already present
+        setAnnouncements((prev) => {
+          if (prev.some((a) => a._id === announcement._id)) {
+            return prev;
+          }
+          return [announcement, ...prev];
+        });
+
+        // Refresh unread count (context will handle the update)
+        refreshUnreadCount();
+
+        // Show toast notification
+        toast(`📢 ${announcement.title}`, {
+          duration: 5000,
+          position: 'top-right',
+          icon: '📢',
+        });
+      }
+    };
+
+    const handleAnnouncementDeleted = (payload: { announcementId: string }) => {
+      setAnnouncements((prev) => {
+        const deleted = prev.find((a) => a._id === payload.announcementId);
+        // Refresh unread count if announcement was unread
+        if (deleted && !deleted.readBy?.includes(user?.id || '')) {
+          refreshUnreadCount();
+        }
+        return prev.filter((a) => a._id !== payload.announcementId);
+      });
+    };
+
+    socket.onAnnouncementCreated(handleAnnouncementCreated);
+    socket.onAnnouncementDeleted(handleAnnouncementDeleted);
+
+    return () => {
+      socket.offAnnouncementCreated(handleAnnouncementCreated);
+      socket.offAnnouncementDeleted(handleAnnouncementDeleted);
+    };
+  }, [socket, user]);
+
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      // Use context method which will update the count
+      await markAsRead(id);
+      setAnnouncements((prev) =>
+        prev.map((a) =>
+          a._id === id
+            ? { ...a, readBy: [...(a.readBy || []), user?.id || ''] }
+            : a
+        )
+      );
+    } catch (error: any) {
+      toast.error('Failed to mark as read');
+      console.error('Error marking as read:', error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      // Use context method which will update the count
+      await markAllAsRead();
+      setAnnouncements((prev) =>
+        prev.map((a) => ({
+          ...a,
+          readBy: [...(a.readBy || []), user?.id || ''],
+        }))
+      );
+      toast.success('All announcements marked as read', {
+        duration: 3000,
+        position: 'top-right',
+      });
+    } catch (error: any) {
+      toast.error('Failed to mark all as read');
+      console.error('Error marking all as read:', error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this announcement?')) {
+      return;
+    }
+
+    try {
+      await apiService.deleteAnnouncement(id);
+      setAnnouncements((prev) => prev.filter((a) => a._id !== id));
+      toast.success('Announcement deleted successfully');
+    } catch (error: any) {
+      toast.error('Failed to delete announcement');
+      console.error('Error deleting announcement:', error);
     }
   };
 
@@ -33,106 +158,53 @@ const Announcements = () => {
       : announcements.filter((ann) => ann.type === filter);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
-          Loading announcements...
-        </div>
-      </div>
-    );
+    return <AnnouncementsLoading />;
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-300">
-        Announcements
-      </h1>
+    <div className="w-full max-w-5xl mx-auto px-4 py-6 md:px-6 lg:px-8">
+      {/* Header */}
+      <AnnouncementsHeader
+        unreadCount={unreadCount}
+        isAdminOrManager={isAdminOrManager}
+        onCreateClick={() => setShowCreateModal(true)}
+        onRefresh={loadAnnouncements}
+      />
 
-      <div className="card mb-6">
-        <div className="flex items-center space-x-4">
-          <Filter className="h-5 w-5 text-gray-600 dark:text-gray-400 transition-colors duration-300" />
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors duration-300 ${
-                filter === 'all'
-                  ? 'bg-primary-600 dark:bg-primary-500 text-white'
-                  : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setFilter('notice')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors duration-300 ${
-                filter === 'notice'
-                  ? 'bg-primary-600 dark:bg-primary-500 text-white'
-                  : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
-              }`}
-            >
-              Notices
-            </button>
-            <button
-              onClick={() => setFilter('event')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors duration-300 ${
-                filter === 'event'
-                  ? 'bg-primary-600 dark:bg-primary-500 text-white'
-                  : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
-              }`}
-            >
-              Events
-            </button>
-            <button
-              onClick={() => setFilter('cancellation')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors duration-300 ${
-                filter === 'cancellation'
-                  ? 'bg-primary-600 dark:bg-primary-500 text-white'
-                  : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
-              }`}
-            >
-              Cancellations
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Filters */}
+      <AnnouncementsFilters
+        filter={filter}
+        showUnreadOnly={showUnreadOnly}
+        unreadCount={unreadCount}
+        onFilterChange={setFilter}
+        onToggleUnreadOnly={() => setShowUnreadOnly(!showUnreadOnly)}
+        onMarkAllAsRead={handleMarkAllAsRead}
+      />
 
-      <div className="space-y-4">
-        {filteredAnnouncements.length === 0 ? (
-          <div className="card text-center py-12">
-            <Bell className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4 transition-colors duration-300" />
-            <p className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
-              No announcements found
-            </p>
-          </div>
-        ) : (
-          filteredAnnouncements.map((announcement) => (
-            <div key={announcement._id} className="card hover:shadow-lg transition-all duration-300">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center space-x-3">
-                  <span className={`badge ${getPriorityColor(announcement.priority)}`}>
-                    {announcement.priority}
-                  </span>
-                  <span className="badge bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50">
-                    {getAnnouncementTypeLabel(announcement.type)}
-                  </span>
-                </div>
-                <span className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
-                  {formatDate(announcement.createdAt)}
-                </span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 transition-colors duration-300">
-                {announcement.title}
-              </h3>
-              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap transition-colors duration-300">
-                {announcement.content}
-              </p>
-            </div>
-          ))
-        )}
-      </div>
+      {/* Announcements List */}
+      <AnnouncementsList
+        announcements={filteredAnnouncements}
+        showUnreadOnly={showUnreadOnly}
+        currentUserId={user?.id}
+        isAdminOrManager={isAdminOrManager}
+        onMarkAsRead={handleMarkAsRead}
+        onDelete={handleDelete}
+      />
+
+      {/* Create Announcement Modal */}
+      {showCreateModal && (
+        <CreateAnnouncementModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={() => {
+            setShowCreateModal(false);
+            loadAnnouncements();
+            refreshUnreadCount();
+          }}
+        />
+      )}
     </div>
   );
 };
 
 export default Announcements;
-
