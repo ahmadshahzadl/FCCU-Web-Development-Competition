@@ -38,7 +38,7 @@ export const env = {
   ),
   GEMINI_API_KEY: getEnv(
     'GEMINI_API_KEY',
-    'AIzaSyCT6bbwNhPI0QsiETu4vhbTV7eIS6jhJLg'
+    'AIzaSyB5utRz6cZ5CHv7fW4-aa0LjurupXgNNv4'
   ),
 
   // CORS Configuration

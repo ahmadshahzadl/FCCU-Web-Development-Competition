@@ -11,7 +11,7 @@ const AIConfigSchema: Schema = new Schema(
     systemPrompt: {
       type: String,
       required: [true, 'System prompt is required'],
-      trim: true,
+      trim: false, // Don't trim to preserve full prompt content
     },
   },
   {
