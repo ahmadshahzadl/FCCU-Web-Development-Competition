@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '@/services/api';
-import { toast } from 'react-hot-toast';
 import type { Category } from '@/types';
 
 interface RequestAnalyticsProps {

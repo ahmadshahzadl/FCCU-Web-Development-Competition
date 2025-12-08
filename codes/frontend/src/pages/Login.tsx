@@ -11,7 +11,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSystemConfig } from '@/contexts/SystemConfigContext';
 import { toast } from 'react-hot-toast';
 import { LogIn, Mail, Lock, Home, Eye, EyeOff, X, Info, AlertCircle, RefreshCw } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
 import { getDefaultRedirectPath } from '@/utils/auth.helpers';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
@@ -28,7 +27,6 @@ const Login = () => {
   const { config: systemConfig, loading: configLoading } = useSystemConfig();
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme } = useTheme();
   
   usePageTitle('Sign In');
 

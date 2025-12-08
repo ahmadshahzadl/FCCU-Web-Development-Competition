@@ -21,7 +21,6 @@ import type {
   ChatMessage,
   AnalyticsOverview,
   CategoryStats,
-  StatusStats,
   TrendData,
   Notification,
   User,
@@ -203,25 +202,25 @@ class ApiService {
   // Get user's announcements
   async getUserAnnouncements(): Promise<Announcement[]> {
     const response = await apiClient.get<{ success: true; data: Announcement[] }>('/announcements/me');
-    return response.data;
+    return response.data.data;
   }
 
   // Get unread announcements
   async getUnreadAnnouncements(): Promise<Announcement[]> {
     const response = await apiClient.get<{ success: true; data: Announcement[] }>('/announcements/me/unread');
-    return response.data;
+    return response.data.data;
   }
 
   // Get unread count
   async getUnreadCount(): Promise<number> {
     const response = await apiClient.get<{ success: true; data: { count: number } }>('/announcements/me/unread-count');
-    return response.data.count;
+    return response.data.data.count;
   }
 
   // Mark announcement as read
   async markAnnouncementAsRead(id: string): Promise<Announcement> {
     const response = await apiClient.put<{ success: true; data: Announcement; message: string }>(`/announcements/${id}/read`);
-    return response.data;
+    return response.data.data;
   }
 
   // Mark all announcements as read
@@ -232,13 +231,13 @@ class ApiService {
   // Create announcement (admin/manager only)
   async createAnnouncement(data: CreateAnnouncementData): Promise<Announcement> {
     const response = await apiClient.post<{ success: true; data: Announcement; message: string }>('/announcements', data);
-    return response.data;
+    return response.data.data;
   }
 
   // Get all announcements (admin/manager only)
   async getAllAnnouncements(): Promise<Announcement[]> {
     const response = await apiClient.get<{ success: true; data: Announcement[] }>('/announcements');
-    return response.data;
+    return response.data.data;
   }
 
   // Delete announcement (admin/manager only)
@@ -249,7 +248,7 @@ class ApiService {
   // Get announcement by ID
   async getAnnouncementById(id: string): Promise<Announcement> {
     const response = await apiClient.get<{ success: true; data: Announcement }>(`/announcements/${id}`);
-    return response.data;
+    return response.data.data;
   }
 
   // Legacy method for backward compatibility
@@ -438,7 +437,7 @@ class ApiService {
   // System Configuration Methods (Admin Only)
   async getSystemConfig(): Promise<SystemConfig> {
     const response = await apiClient.get<{ success: true; data: SystemConfig }>('/system-config');
-    return response.data;
+    return response.data.data;
   }
 
   async updateProjectName(data: UpdateProjectNameRequest): Promise<SystemConfig> {
@@ -446,7 +445,7 @@ class ApiService {
       '/system-config/name',
       data
     );
-    return response.data;
+    return response.data.data;
   }
 
   async updateLogo(data: UpdateLogoRequest): Promise<SystemConfig> {
@@ -454,7 +453,7 @@ class ApiService {
       '/system-config/logo',
       data
     );
-    return response.data;
+    return response.data.data;
   }
 
   async addEmailDomain(data: AddEmailDomainRequest): Promise<SystemConfig> {
@@ -462,7 +461,7 @@ class ApiService {
       '/system-config/email-domains',
       data
     );
-    return response.data;
+    return response.data.data;
   }
 
   async removeEmailDomain(data: RemoveEmailDomainRequest): Promise<SystemConfig> {
@@ -470,15 +469,21 @@ class ApiService {
       '/system-config/email-domains',
       { data }
     );
-    return response.data;
+    return response.data.data;
   }
 
   // Public System Configuration (No authentication required)
   async getPublicSystemConfig(): Promise<PublicSystemConfig> {
     const response = await apiClient.get<{ success: true; data: PublicSystemConfig }>(
-      '/system-config/public'
+      '/system-config/public',
+      { requiresAuth: false }
     );
-    return response.data;
+    const result = response.data.data;
+    // Ensure projectName is always present
+    return {
+      projectName: result.projectName || 'Campus Helper',
+      logoUrl: result.logoUrl,
+    };
   }
 }
 

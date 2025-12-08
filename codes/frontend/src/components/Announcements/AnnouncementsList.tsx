@@ -26,7 +26,7 @@ const AnnouncementsList = ({
   return (
     <div className="space-y-4">
       {announcements.map((announcement) => {
-        const isRead = announcement.readBy?.includes(currentUserId || '');
+        const isRead = announcement.readBy?.includes(currentUserId || '') ?? false;
         return (
           <AnnouncementCard
             key={announcement._id}

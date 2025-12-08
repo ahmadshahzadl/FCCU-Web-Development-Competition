@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { apiService } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-hot-toast';
-import { RefreshCw, Filter, Eye, Edit, Trash2 } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import type { ServiceRequest, RequestStatus, Category } from '@/types';
 import { useSocket } from '@/hooks/useSocket';
 import { storage } from '@/utils/storage';
@@ -170,8 +170,9 @@ const RequestManagement = () => {
           filterStatus: currentFilters.status,
           filterCategory: currentFilters.category,
         });
-        toast.info('New request received but doesn\'t match current filters. Clear filters to see it.', {
+        toast('New request received but doesn\'t match current filters. Clear filters to see it.', {
           duration: 4000,
+          icon: 'ℹ️',
         });
       } else {
         console.log('RequestManagement: Request matches filters but not on page 1', {

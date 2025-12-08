@@ -36,7 +36,8 @@ export const useRequests = (filters?: {
     setLoading(true);
     try {
       const data = await apiService.getRequests(filters);
-      setRequests(data);
+      const requestsArray = Array.isArray(data) ? data : (data as any).data || [];
+      setRequests(requestsArray);
     } catch (error) {
       console.error('Error fetching requests:', error);
     } finally {

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { apiService } from '@/services/api';
 import { toast } from 'react-hot-toast';
-import type { RequestStatus, UpdateRequestStatusData } from '@/types';
+import type { RequestStatus } from '@/types';
 
 interface UpdateRequestStatusModalProps {
   requestId: string;
@@ -36,11 +36,6 @@ const UpdateRequestStatusModal = ({
     setLoading(true);
 
     try {
-      const updateData: UpdateRequestStatusData = {
-        status,
-        adminNotes: adminNotes.trim() || undefined,
-      };
-
       await apiService.updateRequestStatus(requestId, {
         status,
         adminNotes: adminNotes.trim() || undefined,

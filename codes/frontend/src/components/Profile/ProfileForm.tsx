@@ -4,13 +4,12 @@
  * Main form for editing user profile with role-based restrictions
  */
 
-import { useState } from 'react';
 import { Save } from 'lucide-react';
-import { Mail, Hash, Lock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Mail, Hash, Lock } from 'lucide-react';
 import FormField from './FormField';
 import FormFieldWithIcon from './FormFieldWithIcon';
 import EmailInputWithDomain from '@/components/Form/EmailInputWithDomain';
-import type { User, UpdateProfileRequest, UserRole } from '@/types';
+import type { User, UpdateProfileRequest } from '@/types';
 import { getRoleDisplayName, getRoleBadgeColor } from '@/utils/auth.helpers';
 import { Shield, UserCog, Briefcase, GraduationCap, User as UserIcon } from 'lucide-react';
 
@@ -121,12 +120,7 @@ const ProfileForm = ({
         <FormField
           label="Role"
           htmlFor="role"
-          helperText={
-            <div className="flex items-center space-x-1.5">
-              <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
-              <span>Role cannot be changed</span>
-            </div>
-          }
+          helperText="Role cannot be changed"
         >
           <div className="flex items-center">
             <span className={`inline-flex items-center px-3.5 py-2 rounded-lg text-sm font-medium ${getRoleBadgeColor(user.role)}`}>
@@ -147,12 +141,7 @@ const ProfileForm = ({
         type="password"
         placeholder="Leave blank to keep current password"
         minLength={6}
-        helperText={
-          <div className="flex items-center space-x-1.5">
-            <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" />
-            <span>Minimum 6 characters. Leave blank if you don't want to change it.</span>
-          </div>
-        }
+        helperText="Minimum 6 characters. Leave blank if you don't want to change it."
       />
 
       {/* Submit Button */}

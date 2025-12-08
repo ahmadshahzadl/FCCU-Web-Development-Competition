@@ -68,8 +68,8 @@ class ApiClient {
     // Response interceptor - Handle errors and transform responses
     this.api.interceptors.response.use(
       (response) => {
-        // Transform successful responses to match API structure
-        return this.transformResponse(response);
+        // Return the response as-is, transformation happens in service methods
+        return response;
       },
       (error: AxiosError) => {
         return Promise.reject(this.handleError(error));
@@ -82,26 +82,6 @@ class ApiClient {
    */
   private getToken(): string | null {
     return localStorage.getItem('authToken');
-  }
-
-  /**
-   * Transform Axios response to match API response structure
-   */
-  private transformResponse(response: any): ApiSuccessResponse<any> {
-    // Axios wraps the response in a data property
-    const responseData = response.data;
-
-    // If response already has the correct structure (success field), return it
-    if (responseData && typeof responseData === 'object' && 'success' in responseData) {
-      return responseData;
-    }
-
-    // Otherwise, wrap the data in the standard response format
-    return {
-      success: true,
-      data: responseData,
-      message: response.statusText,
-    };
   }
 
   /**

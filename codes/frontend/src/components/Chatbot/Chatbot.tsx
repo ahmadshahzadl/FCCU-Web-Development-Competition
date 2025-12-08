@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { apiService } from '@/services/api';
 import { Send, Bot, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 

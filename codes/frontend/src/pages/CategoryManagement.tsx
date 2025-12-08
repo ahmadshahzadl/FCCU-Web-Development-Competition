@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '@/services/api';
 import { toast } from 'react-hot-toast';
-import { RefreshCw, Plus, Edit, Trash2, Power, PowerOff } from 'lucide-react';
+import { RefreshCw, Plus } from 'lucide-react';
 import type { Category, CreateCategoryData, UpdateCategoryData } from '@/types';
 import CategoryCard from '@/components/CategoryManagement/CategoryCard';
 import CreateCategoryModal from '@/components/CategoryManagement/CreateCategoryModal';

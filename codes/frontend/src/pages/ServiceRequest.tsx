@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '@/services/api';
 import { toast } from 'react-hot-toast';
-import type { CreateRequestDto, Category } from '@/types';
-import { Upload, Send, Image as ImageIcon, FileText } from 'lucide-react';
+import type { CreateRequestDto, Category, RequestCategory } from '@/types';
+import { Upload, Send, FileText } from 'lucide-react';
 
 const ServiceRequest = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState<CreateRequestDto>({
-    category: '',
+    category: '' as RequestCategory,
     description: '',
     studentName: '',
   });
@@ -26,7 +26,7 @@ const ServiceRequest = () => {
       const response = await apiService.getCategories(false); // Only active categories
       setCategories(response);
       if (response.length > 0 && !formData.category) {
-        setFormData({ ...formData, category: response[0].slug });
+        setFormData({ ...formData, category: response[0].slug as RequestCategory });
       }
     } catch (error: any) {
       toast.error('Failed to load categories');
@@ -62,7 +62,7 @@ const ServiceRequest = () => {
       
       // Reset form
       setFormData({
-        category: categories.length > 0 ? categories[0].slug : '',
+        category: categories.length > 0 ? (categories[0].slug as RequestCategory) : ('' as RequestCategory),
         description: '',
         studentName: '',
       });
@@ -152,7 +152,7 @@ const ServiceRequest = () => {
                 <select
                   id="category"
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value as RequestCategory })}
                   className="input h-12 text-sm font-medium transition-all duration-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   required
                 >

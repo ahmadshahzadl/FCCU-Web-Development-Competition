@@ -22,7 +22,8 @@ const Dashboard = () => {
     setLoading(true);
     try {
       const data = await apiService.getRequests(filters);
-      setRequests(data);
+      const requestsArray = Array.isArray(data) ? data : (data as any).data || [];
+      setRequests(requestsArray);
     } catch (error: any) {
       toast.error('Failed to fetch requests');
       console.error('Error fetching requests:', error);
@@ -33,7 +34,7 @@ const Dashboard = () => {
 
   const handleStatusUpdate = async (id: string, status: RequestStatus) => {
     try {
-      await apiService.updateRequestStatus(id, status);
+      await apiService.updateRequestStatus(id, { status });
       toast.success('Status updated successfully');
       fetchRequests();
     } catch (error: any) {
@@ -229,7 +230,7 @@ const Dashboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {getCategoryLabel(request.category)}
+                        {getCategoryLabel(request.category as RequestCategory)}
                       </span>
                     </td>
                     <td className="px-6 py-4">

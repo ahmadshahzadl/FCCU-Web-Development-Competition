@@ -23,7 +23,7 @@ interface FormFieldWithIconProps {
   disabled?: boolean;
   minLength?: number;
   maxLength?: number;
-  helperText?: string;
+  helperText?: string | React.ReactNode;
   readOnlyMessage?: string;
   className?: string;
 }

@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { apiService } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-hot-toast';
-import type { CreateUserRequest, UserRole } from '@/types';
+import type { CreateUserRequest } from '@/types';
 import { UserPlus, X, User as UserIcon, Lock, UserCog } from 'lucide-react';
 import EmailInputWithDomain from '@/components/Form/EmailInputWithDomain';
 

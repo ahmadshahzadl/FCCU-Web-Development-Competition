@@ -107,7 +107,7 @@ const ToasterWithTheme = () => {
 };
 
 const AppRoutes = () => {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
   // Initialize global student socket hook for request update toasts on all pages
   // Hook handles role check internally

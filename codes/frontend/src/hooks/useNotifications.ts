@@ -17,9 +17,7 @@ export const useNotifications = (userId?: string) => {
     const handleNewNotification = (notification: Notification) => {
       setNotifications((prev) => [notification, ...prev]);
       setUnreadCount((prev) => prev + 1);
-      toast.success(notification.title, {
-        description: notification.message,
-      });
+      toast.success(`${notification.title}: ${notification.message}`);
     };
 
     socketService.onNewNotification(handleNewNotification);

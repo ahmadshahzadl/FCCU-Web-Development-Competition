@@ -129,7 +129,7 @@ const Analytics = () => {
                 fill="#8884d8"
                 dataKey="count"
               >
-                {categoryStats.map((entry, index) => (
+                {categoryStats.map((_entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

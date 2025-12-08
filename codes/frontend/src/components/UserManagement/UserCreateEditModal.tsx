@@ -6,8 +6,7 @@
 
 import { useState, useCallback } from 'react';
 import { X, Eye, EyeOff } from 'lucide-react';
-import { getRoleDisplayName } from '@/utils/auth.helpers';
-import type { User, UserRole, CreateUserRequest, UpdateUserRequest } from '@/types';
+import type { User, UserRole, CreateUserRequest } from '@/types';
 import EmailInputWithDomain from '@/components/Form/EmailInputWithDomain';
 
 interface UserCreateEditModalProps {

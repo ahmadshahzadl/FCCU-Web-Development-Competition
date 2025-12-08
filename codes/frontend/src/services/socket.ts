@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import type { ChatMessage, Notification, ServiceRequest, Announcement, AnnouncementCreatedPayload, AnnouncementDeletedPayload } from '@/types';
+import type { ChatMessage, Notification, ServiceRequest, AnnouncementCreatedPayload, AnnouncementDeletedPayload } from '@/types';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
 
