@@ -118,15 +118,15 @@ const LogoSection = ({ config, onUpdate }: LogoSectionProps) => {
   return (
     <div className="card hover:shadow-md transition-shadow duration-300">
       {/* Section Header */}
-      <div className="flex items-start space-x-4 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
-        <div className="p-2.5 rounded-lg bg-purple-100 dark:bg-purple-900/30 transition-colors duration-300">
-          <ImageIcon className="h-5 w-5 text-purple-600 dark:text-purple-400 transition-colors duration-300" />
+      <div className="flex items-start space-x-3 sm:space-x-4 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
+        <div className="p-2 sm:p-2.5 rounded-lg bg-purple-100 dark:bg-purple-900/30 transition-colors duration-300 flex-shrink-0">
+          <ImageIcon className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400 transition-colors duration-300" />
         </div>
-        <div className="flex-1">
-          <h2 className="text-xl font-semibold mb-1 text-gray-900 dark:text-white transition-colors duration-300">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-lg sm:text-xl font-semibold mb-1 text-gray-900 dark:text-white transition-colors duration-300">
             System Logo
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
             Upload and manage the system logo displayed in headers and branding
           </p>
         </div>
@@ -143,26 +143,26 @@ const LogoSection = ({ config, onUpdate }: LogoSectionProps) => {
 
       {/* Current Logo Preview */}
       {config.logoUrl && (
-        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-          <p className="text-sm font-semibold mb-3 text-gray-700 dark:text-gray-300 transition-colors duration-300">
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-300">
+          <p className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-700 dark:text-gray-300 transition-colors duration-300">
             Current Logo
           </p>
-          <div className="flex items-center space-x-4">
-            <div className="border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900 transition-colors duration-300">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="border-2 border-gray-200 dark:border-gray-700 rounded-lg p-2 sm:p-4 bg-white dark:bg-gray-900 transition-colors duration-300">
               <img
                 src={config.logoUrl}
                 alt="Current logo"
-                className="max-h-24 max-w-48 object-contain"
+                className="max-h-16 sm:max-h-20 md:max-h-24 max-w-full sm:max-w-40 md:max-w-48 object-contain"
               />
             </div>
           </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
         {/* File Upload Area */}
         <div>
-          <label className="block text-sm font-semibold mb-2.5 text-gray-700 dark:text-gray-300 transition-colors duration-300">
+          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300 transition-colors duration-300">
             Upload Logo
           </label>
           <div className="relative">
@@ -177,22 +177,22 @@ const LogoSection = ({ config, onUpdate }: LogoSectionProps) => {
             />
             <label
               htmlFor="logo-upload"
-              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-primary-500 dark:hover:border-primary-400 bg-gray-50 dark:bg-gray-800/50 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex flex-col items-center justify-center w-full h-24 sm:h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-primary-500 dark:hover:border-primary-400 bg-gray-50 dark:bg-gray-800/50 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
             >
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <Upload className="h-8 w-8 mb-2 text-gray-400 dark:text-gray-500 transition-colors duration-300" />
-                <p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300">
+              <div className="flex flex-col items-center justify-center pt-3 sm:pt-5 pb-4 sm:pb-6 px-2">
+                <Upload className="h-6 w-6 sm:h-8 sm:w-8 mb-1 sm:mb-2 text-gray-400 dark:text-gray-500 transition-colors duration-300" />
+                <p className="mb-1 sm:mb-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300 text-center">
                   <span className="text-primary-600 dark:text-primary-400">Click to upload</span> or drag and drop
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 transition-colors duration-300">
+                <p className="text-xs text-gray-500 dark:text-gray-400 transition-colors duration-300 text-center">
                   PNG, JPG, JPEG, GIF, SVG, WEBP (Max 2MB)
                 </p>
               </div>
             </label>
           </div>
           <div className="mt-2 flex items-start space-x-2">
-            <Info className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
+            <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 dark:text-gray-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
               Recommended size: 200x50px or similar aspect ratio. Logo will be displayed in the application header.
             </p>
           </div>
@@ -200,9 +200,9 @@ const LogoSection = ({ config, onUpdate }: LogoSectionProps) => {
 
         {/* Preview New Logo */}
         {logo && logo !== config.logoUrl && (
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-semibold text-blue-900 dark:text-blue-300 transition-colors duration-300">
+          <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors duration-300">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <p className="text-xs sm:text-sm font-semibold text-blue-900 dark:text-blue-300 transition-colors duration-300">
                 Preview
               </p>
               <button
@@ -213,26 +213,26 @@ const LogoSection = ({ config, onUpdate }: LogoSectionProps) => {
                     fileInputRef.current.value = '';
                   }
                 }}
-                className="p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-300"
+                className="p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-300 touch-manipulation"
               >
                 <X className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </button>
             </div>
-            <div className="border-2 border-blue-300 dark:border-blue-700 rounded-lg p-4 bg-white dark:bg-gray-900 inline-block transition-colors duration-300">
+            <div className="border-2 border-blue-300 dark:border-blue-700 rounded-lg p-2 sm:p-4 bg-white dark:bg-gray-900 inline-block transition-colors duration-300">
               <img
                 src={logo}
                 alt="Logo preview"
-                className="max-h-24 max-w-48 object-contain"
+                className="max-h-16 sm:max-h-20 md:max-h-24 max-w-full sm:max-w-40 md:max-w-48 object-contain"
               />
             </div>
           </div>
         )}
 
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
           <button
             type="submit"
             disabled={loading || !logo || logo === config.logoUrl}
-            className="btn btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px] justify-center"
+            className="btn btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto sm:min-w-[140px] justify-center text-sm sm:text-base px-4 py-2.5 sm:py-2.5"
           >
             <Save className="h-4 w-4" />
             <span>{loading ? 'Updating...' : 'Save Logo'}</span>
@@ -243,7 +243,7 @@ const LogoSection = ({ config, onUpdate }: LogoSectionProps) => {
               type="button"
               onClick={handleRemoveLogo}
               disabled={loading}
-              className="btn btn-danger flex items-center space-x-2 disabled:opacity-50"
+              className="btn btn-danger flex items-center space-x-2 disabled:opacity-50 w-full sm:w-auto justify-center text-sm sm:text-base px-4 py-2.5 sm:py-2.5"
             >
               <Trash2 className="h-4 w-4" />
               <span>Remove</span>

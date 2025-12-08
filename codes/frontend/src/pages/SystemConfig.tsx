@@ -124,18 +124,18 @@ const SystemConfigPage = () => {
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-6 md:px-6 lg:px-8">
+    <div className="w-full max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6 md:px-6 lg:px-8">
       {/* Header Section */}
-      <div className="mb-8">
-        <div className="flex items-center space-x-4 mb-3">
-          <div className="p-3 rounded-xl bg-primary-100 dark:bg-primary-900/30 transition-colors duration-300">
-            <Settings className="h-7 w-7 text-primary-600 dark:text-primary-400 transition-colors duration-300" />
+      <div className="mb-6 sm:mb-8">
+        <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 mb-3">
+          <div className="p-2 sm:p-3 rounded-xl bg-primary-100 dark:bg-primary-900/30 transition-colors duration-300 flex-shrink-0">
+            <Settings className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-primary-600 dark:text-primary-400 transition-colors duration-300" />
           </div>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
               System Configuration
             </h1>
-            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">
+            <p className="text-xs sm:text-sm md:text-base text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">
               Manage system-wide settings including project name, logo, and email domains
             </p>
           </div>
@@ -143,7 +143,7 @@ const SystemConfigPage = () => {
       </div>
 
       {/* Configuration Sections */}
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Project Name Section */}
         <ProjectNameSection config={config} onUpdate={handleConfigUpdate} />
 
