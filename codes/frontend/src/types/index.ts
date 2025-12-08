@@ -234,6 +234,48 @@ export interface AnalyticsSummary {
   };
 }
 
+// AI Chatbot Types
+export interface AIChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp?: Date;
+}
+
+export interface AIChatRequest {
+  message: string;
+  conversationHistory?: Array<{
+    role: 'user' | 'assistant';
+    content: string;
+  }>;
+}
+
+export interface AIChatResponse {
+  success: true;
+  data: {
+    response: string;
+  };
+}
+
+export interface SystemPromptResponse {
+  success: true;
+  data: {
+    systemPrompt: string;
+  };
+}
+
+export interface UpdateSystemPromptRequest {
+  systemPrompt: string;
+}
+
+export interface UpdateSystemPromptResponse {
+  success: true;
+  data: {
+    systemPrompt: string;
+    updatedAt: string;
+  };
+  message: string;
+}
+
 // User Types
 export type UserRole = 'admin' | 'student' | 'team' | 'manager';
 

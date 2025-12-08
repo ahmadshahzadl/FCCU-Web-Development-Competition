@@ -5,7 +5,6 @@ import {
   MapPin,
   Bell,
   History,
-  BarChart3,
   MessageSquare,
   Users,
   UserCircle,
@@ -112,19 +111,18 @@ const Sidebar = () => {
   }, [location.pathname]);
 
   const allMenuItems: MenuItem[] = [
-    { path: '/', label: 'Home', icon: LayoutDashboard },
     { path: '/request', label: 'Submit Request', icon: FileText, roles: ['student'] },
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'team'] },
     { path: '/map', label: 'Campus Map', icon: MapPin },
     { path: '/announcements', label: 'Announcements', icon: Bell },
     { path: '/history', label: 'Request History', icon: History, roles: ['student', 'team'] },
-    { path: '/analytics', label: 'Analytics', icon: BarChart3, roles: ['admin', 'manager'] },
     { path: '/profile', label: 'My Profile', icon: UserCircle },
     { path: '/users', label: 'User Management', icon: Users, roles: ['admin', 'manager'] },
     { path: '/requests', label: 'Request Management', icon: ClipboardList, roles: ['admin', 'manager'] },
     { path: '/team-requests', label: 'Requests', icon: ClipboardList, roles: ['team'] },
     { path: '/categories', label: 'Category Management', icon: FolderTree, roles: ['admin', 'manager'] },
     { path: '/system-config', label: 'System Configuration', icon: Settings, roles: ['admin'] },
+    { path: '/system-prompt', label: 'AI System Prompt', icon: Settings, roles: ['admin'] },
   ];
 
   // Filter menu items based on user role

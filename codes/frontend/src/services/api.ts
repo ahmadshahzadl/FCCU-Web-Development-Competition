@@ -39,6 +39,11 @@ import type {
   StatusChartData,
   DailyChartData,
   AnalyticsSummary,
+  AIChatRequest,
+  AIChatResponse,
+  SystemPromptResponse,
+  UpdateSystemPromptRequest,
+  UpdateSystemPromptResponse,
 } from '@/types';
 
 /**
@@ -553,6 +558,89 @@ class ApiService {
     if (data && typeof data === 'object' && 'data' in data && (data as any).data) {
       return (data as any).data;
     }
+    return data;
+  }
+
+  // ==================== AI Chatbot ====================
+
+  /**
+   * Send a chat message to AI assistant
+   */
+  async sendAIChatMessage(
+    message: string,
+    conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>
+  ): Promise<AIChatResponse> {
+    const requestData: AIChatRequest = {
+      message,
+      conversationHistory,
+    };
+    const response = await apiClient.post<AIChatResponse>('/ai/chat', requestData);
+    // Extract response from nested structure
+    const data = response.data;
+    // If response is wrapped in { success: true, data: { response: string } }
+    if (data && typeof data === 'object' && 'data' in data) {
+      const innerData = (data as any).data;
+      if (innerData && typeof innerData === 'object' && 'response' in innerData) {
+        return {
+          success: true,
+          data: {
+            response: innerData.response,
+          },
+        };
+      }
+    }
+    // Return as-is if already in correct format
+    return data;
+  }
+
+  /**
+   * Get system prompt (admin only)
+   */
+  async getSystemPrompt(): Promise<SystemPromptResponse> {
+    const response = await apiClient.get<SystemPromptResponse>('/ai/system-prompt');
+    // Extract response from nested structure
+    const data = response.data;
+    // If response is wrapped in { success: true, data: { systemPrompt: string } }
+    if (data && typeof data === 'object' && 'data' in data) {
+      const innerData = (data as any).data;
+      if (innerData && typeof innerData === 'object' && 'systemPrompt' in innerData) {
+        return {
+          success: true,
+          data: {
+            systemPrompt: innerData.systemPrompt,
+          },
+        };
+      }
+    }
+    // Return as-is if already in correct format
+    return data;
+  }
+
+  /**
+   * Update system prompt (admin only)
+   */
+  async updateSystemPrompt(systemPrompt: string): Promise<UpdateSystemPromptResponse> {
+    const requestData: UpdateSystemPromptRequest = {
+      systemPrompt,
+    };
+    const response = await apiClient.put<UpdateSystemPromptResponse>('/ai/system-prompt', requestData);
+    // Extract response from nested structure
+    const data = response.data;
+    // If response is wrapped in { success: true, data: { systemPrompt: string, updatedAt: string }, message: string }
+    if (data && typeof data === 'object' && 'data' in data) {
+      const innerData = (data as any).data;
+      if (innerData && typeof innerData === 'object' && 'systemPrompt' in innerData) {
+        return {
+          success: true,
+          data: {
+            systemPrompt: innerData.systemPrompt,
+            updatedAt: innerData.updatedAt || new Date().toISOString(),
+          },
+          message: (data as any).message || 'System prompt updated successfully',
+        };
+      }
+    }
+    // Return as-is if already in correct format
     return data;
   }
 }
