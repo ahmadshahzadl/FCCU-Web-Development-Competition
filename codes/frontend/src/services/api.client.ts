@@ -165,6 +165,14 @@ class ApiClient {
       );
     }
 
+    // Handle 409 Conflict (e.g., duplicate category name)
+    if (status === 409) {
+      const message = responseData?.message || 'A resource with this information already exists.';
+      const conflictError = new Error(message);
+      (conflictError as any).status = 409;
+      return conflictError;
+    }
+
     // Handle 500 Internal Server Error
     if (status >= 500) {
       return new Error(

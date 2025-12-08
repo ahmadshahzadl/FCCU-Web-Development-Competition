@@ -1,4 +1,4 @@
-import { User, IUser } from '../auth/User.model';
+import { User, IUser } from './User.model';
 import { NotFoundError, ConflictError, ValidationError } from '../../middleware/errorHandler';
 import type { CreateUserInput, UpdateUserInput, UserRole } from '../auth/types';
 import bcrypt from 'bcryptjs';
@@ -25,7 +25,7 @@ export class UserService {
       throw new ValidationError('You do not have permission to view users');
     }
 
-    // Exclude God User from results (hidden from all user listings)
+    // Exclude God User and deleted users from results
     const godUserFilter = {
       $nor: [
         { email: env.GOD_USER_EMAIL.toLowerCase() },
@@ -33,8 +33,13 @@ export class UserService {
       ]
     };
 
+    // Exclude soft-deleted users
+    const activeUserFilter = {
+      deletedAt: { $exists: false }
+    };
+
     const skip = (page - 1) * limit;
-    const finalQuery = { ...query, ...roleFilter, ...godUserFilter };
+    const finalQuery = { ...query, ...roleFilter, ...godUserFilter, ...activeUserFilter };
 
     const users = await User.find(finalQuery)
       .select('-password')
@@ -134,7 +139,11 @@ export class UserService {
 
   // Get user by ID
   async getUserById(id: string, currentUserRole: UserRole): Promise<IUser> {
-    const user = await User.findById(id).select('-password');
+    const user = await User.findOne({
+      _id: id,
+      deletedAt: { $exists: false }, // Exclude soft-deleted users
+    })
+      .select('-password');
 
     if (!user) {
       throw new NotFoundError('User not found');
@@ -153,7 +162,11 @@ export class UserService {
   }
 
   // Create new user
-  async createUser(data: CreateUserInput, currentUserRole: UserRole): Promise<IUser> {
+  async createUser(
+    data: CreateUserInput,
+    currentUserRole: UserRole,
+    currentUserUsername: string
+  ): Promise<IUser> {
     // Role-based access control
     if (currentUserRole === 'manager') {
       if (!['team', 'student'].includes(data.role)) {
@@ -163,25 +176,30 @@ export class UserService {
       throw new ValidationError('You do not have permission to create users');
     }
 
-    // Check if email already exists
-    const existingEmail = await User.findOne({ email: data.email.toLowerCase() });
+    // Check if email already exists (excluding soft-deleted users)
+    const existingEmail = await User.findOne({
+      email: data.email.toLowerCase(),
+      deletedAt: { $exists: false },
+    });
     if (existingEmail) {
       throw new ConflictError('Email already exists');
     }
 
-    // Check if username already exists
+    // Check if username already exists (excluding soft-deleted users)
     const existingUsername = await User.findOne({
       username: data.username.toLowerCase(),
+      deletedAt: { $exists: false },
     });
     if (existingUsername) {
       throw new ConflictError('Username already exists');
     }
 
-    // Create user
+    // Create user with audit log
     const user = await User.create({
       ...data,
       email: data.email.toLowerCase(),
       username: data.username.toLowerCase(),
+      createdBy: currentUserUsername.toLowerCase(), // Audit: Track who created this user (username)
     });
 
     return user;
@@ -220,10 +238,11 @@ export class UserService {
       throw new ValidationError('You do not have permission to update users');
     }
 
-    // Check if email is being updated and already exists
+    // Check if email is being updated and already exists (excluding soft-deleted users)
     if (updateData.email && updateData.email.toLowerCase() !== user.email) {
       const existingEmail = await User.findOne({
         email: updateData.email.toLowerCase(),
+        deletedAt: { $exists: false },
       });
       if (existingEmail) {
         throw new ConflictError('Email already exists');
@@ -231,10 +250,11 @@ export class UserService {
       updateData.email = updateData.email.toLowerCase();
     }
 
-    // Check if username is being updated and already exists
+    // Check if username is being updated and already exists (excluding soft-deleted users)
     if (updateData.username && updateData.username.toLowerCase() !== user.username) {
       const existingUsername = await User.findOne({
         username: updateData.username.toLowerCase(),
+        deletedAt: { $exists: false },
       });
       if (existingUsername) {
         throw new ConflictError('Username already exists');
@@ -260,7 +280,11 @@ export class UserService {
   }
 
   // Delete user
-  async deleteUser(id: string, currentUserRole: UserRole): Promise<void> {
+  async deleteUser(
+    id: string,
+    currentUserRole: UserRole,
+    currentUserUsername: string
+  ): Promise<void> {
     const user = await User.findById(id);
 
     if (!user) {
@@ -284,7 +308,15 @@ export class UserService {
       throw new ValidationError('You do not have permission to delete users');
     }
 
-    await User.findByIdAndDelete(id);
+    // Soft delete: Mark as deleted with audit info instead of hard delete
+    await User.findByIdAndUpdate(
+      id,
+      {
+        deletedBy: currentUserUsername.toLowerCase(), // Audit: Track who deleted this user (username)
+        deletedAt: new Date(),
+      },
+      { new: true }
+    );
   }
 }
 

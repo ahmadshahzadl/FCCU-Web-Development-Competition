@@ -26,7 +26,7 @@ export const env = {
 
   // JWT Configuration
   JWT_SECRET: getEnv('JWT_SECRET', 'your-super-secret-jwt-key-change-in-production'),
-  JWT_EXPIRES_IN: getEnv('JWT_EXPIRES_IN', '7d'),
+  JWT_EXPIRES_IN: getEnv('JWT_EXPIRES_IN', '1h'),
 
   // OpenAI Configuration
   OPENAI_API_KEY: getEnv('OPENAI_API_KEY', ''),

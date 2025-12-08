@@ -1,11 +1,34 @@
+// Category Types
+export interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCategoryData {
+  name: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface UpdateCategoryData {
+  name?: string;
+  description?: string;
+  isActive?: boolean;
+}
+
 // Request Types
-export type RequestCategory = 'maintenance' | 'academic' | 'lost-found' | 'general';
+export type RequestCategory = 'maintenance' | 'academic' | 'lost-found' | 'general'; // Legacy type for backward compatibility
 export type RequestStatus = 'pending' | 'in-progress' | 'resolved';
 export type RequestPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface ServiceRequest {
   _id: string;
-  category: RequestCategory;
+  category: string; // Category slug (dynamic)
   description: string;
   status: RequestStatus;
   studentId?: string;
@@ -16,6 +39,23 @@ export interface ServiceRequest {
   createdAt: string;
   updatedAt: string;
   resolvedAt?: string;
+}
+
+export interface UpdateRequestStatusData {
+  status: RequestStatus;
+  adminNotes?: string;
+}
+
+export interface GetRequestsQuery {
+  status?: RequestStatus;
+  category?: string; // Category slug
+  studentId?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface RequestCountResponse {
+  total: number;
 }
 
 export interface CreateRequestDto {

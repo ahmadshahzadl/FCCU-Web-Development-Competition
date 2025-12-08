@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { connectDatabase, disconnectDatabase } from '../config/database';
-import { User } from '../modules/auth/User.model';
+import { User } from '../modules/user/User.model';
 import { env, validateEnv } from '../config/env';
 
 /**

@@ -88,6 +88,10 @@ backend/
 - **OpenAI API** - AI chatbot integration
 - **Multer** - File upload handling
 - **JWT** - Authentication
+
+## 📚 Module Documentation
+
+- [Module Documentation](./docs/MODULE_DOCUMENTATION.md) - Complete documentation for all modules
 - **bcryptjs** - Password hashing
 
 ## 📝 API Endpoints

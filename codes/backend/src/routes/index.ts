@@ -3,6 +3,7 @@ import RequestRoutesInstance from '../modules/request/Request.routes';
 import AnnouncementRoutesInstance from '../modules/announcement/Announcement.routes';
 import AuthRoutesInstance from '../modules/auth/Auth.routes';
 import UserRoutesInstance from '../modules/user/User.routes';
+import CategoryRoutesInstance from '../modules/category/Category.routes';
 // Import other module routes here as they are created
 // import ChatRoutesInstance from '../modules/chat/Chat.routes';
 // import AnalyticsRoutesInstance from '../modules/analytics/Analytics.routes';
@@ -23,9 +24,12 @@ class ApiRoutes {
     // User Routes (protected)
     this.router.use('/users', UserRoutesInstance);
     
+    // Category Routes (protected)
+    this.router.use('/categories', CategoryRoutesInstance);
+    
     // API Routes
     this.router.use('/requests', RequestRoutesInstance);
-    this.router.use('/announcements', AnnouncementRoutesInstance);
+    // this.router.use('/announcements', AnnouncementRoutesInstance);
     // this.router.use('/chat', ChatRoutesInstance);
     // this.router.use('/analytics', AnalyticsRoutesInstance);
     // this.router.use('/notifications', NotificationRoutesInstance);

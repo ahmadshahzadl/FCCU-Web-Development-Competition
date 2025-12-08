@@ -19,24 +19,24 @@ const Home = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {isStudent && (
-          <Link
-            to="/request"
+        <Link
+          to="/request"
             className="card hover:shadow-lg transition-all duration-300 cursor-pointer group"
-          >
-            <div className="flex items-center space-x-4">
+        >
+          <div className="flex items-center space-x-4">
               <div className="p-3 bg-primary-100 dark:bg-primary-900/40 rounded-lg group-hover:bg-primary-200 dark:group-hover:bg-primary-900/60 transition-colors">
                 <FileText className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-              </div>
-              <div>
+            </div>
+            <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white transition-colors duration-300">
                   Submit Request
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
                   Report issues or request services
                 </p>
-              </div>
             </div>
-          </Link>
+          </div>
+        </Link>
         )}
 
         <Link
@@ -137,17 +137,17 @@ const Home = () => {
 
       {isStudent && (
         <div className="card bg-gradient-to-r from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 text-white border-0 shadow-lg">
-          <h2 className="text-2xl font-bold mb-2">Quick Actions</h2>
+        <h2 className="text-2xl font-bold mb-2">Quick Actions</h2>
           <p className="mb-4 text-primary-50 dark:text-primary-100">
-            Need help? Use our AI Campus Assistant to get instant answers to your questions.
-          </p>
-          <Link
-            to="/request"
+          Need help? Use our AI Campus Assistant to get instant answers to your questions.
+        </p>
+        <Link
+          to="/request"
             className="inline-block bg-white dark:bg-gray-100 text-primary-600 dark:text-primary-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-200 transition-colors duration-300"
-          >
-            Get Started
-          </Link>
-        </div>
+        >
+          Get Started
+        </Link>
+      </div>
       )}
     </div>
   );

@@ -9,6 +9,12 @@ import { apiClient } from './api.client';
 import type {
   ServiceRequest,
   CreateRequestDto,
+  UpdateRequestStatusData,
+  RequestCountResponse,
+  PaginatedResponse,
+  Category,
+  CreateCategoryData,
+  UpdateCategoryData,
   Announcement,
   Chat,
   ChatMessage,
@@ -30,10 +36,69 @@ import type {
  */
 class ApiService {
 
+  // ==================== Category Management ====================
+
+  /**
+   * Get all categories
+   */
+  async getCategories(includeInactive: boolean = false): Promise<Category[]> {
+    const response = await apiClient.get<Category[]>('/categories', {
+      params: includeInactive ? { includeInactive: 'true' } : {},
+    });
+    return response.data;
+  }
+
+  /**
+   * Get a single category by ID
+   */
+  async getCategoryById(id: string): Promise<Category> {
+    const response = await apiClient.get<Category>(`/categories/${id}`);
+    return response.data;
+  }
+
+  /**
+   * Create a new category
+   */
+  async createCategory(data: CreateCategoryData): Promise<Category> {
+    const response = await apiClient.post<Category>('/categories', data);
+    return response.data;
+  }
+
+  /**
+   * Update a category
+   */
+  async updateCategory(id: string, data: UpdateCategoryData): Promise<Category> {
+    const response = await apiClient.put<Category>(`/categories/${id}`, data);
+    return response.data;
+  }
+
+  /**
+   * Delete a category
+   */
+  async deleteCategory(id: string): Promise<void> {
+    await apiClient.delete<void>(`/categories/${id}`);
+  }
+
+  /**
+   * Activate a category
+   */
+  async activateCategory(id: string): Promise<Category> {
+    const response = await apiClient.put<Category>(`/categories/${id}/activate`);
+    return response.data;
+  }
+
+  /**
+   * Deactivate a category
+   */
+  async deactivateCategory(id: string): Promise<Category> {
+    const response = await apiClient.put<Category>(`/categories/${id}/deactivate`);
+    return response.data;
+  }
+
   // ==================== Request Management ====================
 
   /**
-   * Get all service requests with optional filters
+   * Get all service requests with optional filters and pagination
    */
   async getRequests(params?: {
     status?: string;
@@ -41,8 +106,22 @@ class ApiService {
     studentId?: string;
     page?: number;
     limit?: number;
-  }): Promise<ServiceRequest[]> {
-    const response = await apiClient.get<ServiceRequest[]>('/requests', {
+  }): Promise<ServiceRequest[] | PaginatedResponse<ServiceRequest>> {
+    const response = await apiClient.get<ServiceRequest[] | PaginatedResponse<ServiceRequest>>('/requests', {
+      params,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get request count with optional filters
+   */
+  async getRequestCount(params?: {
+    status?: string;
+    category?: string;
+    studentId?: string;
+  }): Promise<RequestCountResponse> {
+    const response = await apiClient.get<RequestCountResponse>('/requests/count', {
       params,
     });
     return response.data;
@@ -91,13 +170,9 @@ class ApiService {
    */
   async updateRequestStatus(
     id: string,
-    status: ServiceRequest['status'],
-    adminNotes?: string
+    data: UpdateRequestStatusData
   ): Promise<ServiceRequest> {
-    const response = await apiClient.put<ServiceRequest>(`/requests/${id}/status`, {
-      status,
-      adminNotes,
-    });
+    const response = await apiClient.put<ServiceRequest>(`/requests/${id}/status`, data);
     return response.data;
   }
 

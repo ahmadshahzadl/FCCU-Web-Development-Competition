@@ -39,8 +39,8 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link 
-            to="/" 
+            <Link
+              to="/"
             className="flex items-center space-x-3 group transition-transform duration-200 hover:scale-[1.02]"
           >
             <div className="p-2 rounded-lg bg-primary-600 dark:bg-primary-500 text-white transition-all duration-300 shadow-sm shadow-primary-500/20 dark:shadow-primary-500/30">
@@ -49,7 +49,7 @@ const Navbar = () => {
             <span className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight transition-colors duration-300">
               Campus Helper
             </span>
-          </Link>
+            </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
@@ -98,7 +98,7 @@ const Navbar = () => {
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300 flex items-center space-x-2"
-                    >
+            >
                       <LogOut className="h-4 w-4" />
                       <span>Sign out</span>
                     </button>
@@ -130,7 +130,7 @@ const Navbar = () => {
               {mobileMenuOpen ? (
                 <X className="h-6 w-6" />
               ) : (
-                <Menu className="h-6 w-6" />
+              <Menu className="h-6 w-6" />
               )}
             </button>
           </div>

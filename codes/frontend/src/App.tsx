@@ -15,6 +15,8 @@ import RequestHistory from './pages/RequestHistory';
 import Analytics from './pages/Analytics';
 import Chat from './pages/Chat';
 import UserManagement from './pages/UserManagement';
+import RequestManagement from './pages/RequestManagement';
+import CategoryManagement from './pages/CategoryManagement';
 import Profile from './pages/Profile';
 import Chatbot from './components/Chatbot/Chatbot';
 
@@ -22,30 +24,30 @@ const ToasterWithTheme = () => {
   const { theme } = useTheme();
   
   return (
-    <Toaster
-      position="top-right"
-      toastOptions={{
-        duration: 4000,
-        style: {
-          background: theme === 'dark' ? '#1f2937' : '#363636',
-          color: '#fff',
-        },
-        success: {
-          duration: 3000,
-          iconTheme: {
-            primary: '#10b981',
-            secondary: '#fff',
-          },
-        },
-        error: {
+      <Toaster
+        position="top-right"
+        toastOptions={{
           duration: 4000,
-          iconTheme: {
-            primary: '#ef4444',
-            secondary: '#fff',
+          style: {
+          background: theme === 'dark' ? '#1f2937' : '#363636',
+            color: '#fff',
           },
-        },
-      }}
-    />
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
   );
 };
 
@@ -176,6 +178,26 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/requests"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'manager']}>
+            <Layout>
+              <RequestManagement />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/categories"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'manager']}>
+            <Layout>
+              <CategoryManagement />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
       {/* Catch all - redirect to home or login */}
       <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />} />
@@ -191,7 +213,7 @@ function App() {
           <AppRoutes />
           <Chatbot />
           <ToasterWithTheme />
-        </Router>
+    </Router>
       </AuthProvider>
     </ThemeProvider>
   );

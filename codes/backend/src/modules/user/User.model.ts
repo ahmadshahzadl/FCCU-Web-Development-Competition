@@ -9,6 +9,9 @@ export interface IUser extends Document {
   password: string;
   name?: string;
   role: UserRole;
+  createdBy?: string; // Username of user who created this user
+  deletedBy?: string; // Username of user who deleted this user
+  deletedAt?: Date; // When user was deleted
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -45,6 +48,19 @@ const UserSchema: Schema = new Schema(
       required: [true, 'Role is required'],
       default: 'student',
     },
+    createdBy: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+    deletedBy: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+    deletedAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
@@ -77,6 +93,8 @@ UserSchema.methods.comparePassword = async function (
 // Indexes
 // Note: email and username indexes are created automatically by unique: true
 UserSchema.index({ role: 1 });
+UserSchema.index({ createdBy: 1 }); // Index for audit queries
+UserSchema.index({ deletedBy: 1 }); // Index for audit queries
 
 export const User = mongoose.model<IUser>('User', UserSchema);
 

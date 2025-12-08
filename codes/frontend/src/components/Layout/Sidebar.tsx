@@ -9,6 +9,8 @@ import {
   MessageSquare,
   Users,
   UserCircle,
+  ClipboardList,
+  FolderTree,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import type { UserRole } from '@/types';
@@ -35,6 +37,8 @@ const Sidebar = () => {
     { path: '/analytics', label: 'Analytics', icon: BarChart3, roles: ['admin', 'manager'] },
     { path: '/profile', label: 'My Profile', icon: UserCircle },
     { path: '/users', label: 'User Management', icon: Users, roles: ['admin', 'manager'] },
+    { path: '/requests', label: 'Request Management', icon: ClipboardList, roles: ['admin', 'manager'] },
+    { path: '/categories', label: 'Category Management', icon: FolderTree, roles: ['admin', 'manager'] },
   ];
 
   // Filter menu items based on user role
@@ -47,19 +51,19 @@ const Sidebar = () => {
     <aside className="hidden lg:block w-64 glass-sidebar min-h-[calc(100vh-4rem)]">
       <nav className="p-4">
         <div className="space-y-1">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
                 className={`flex items-center space-x-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 ${
-                  isActive
+                isActive
                     ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/40 shadow-sm'
                     : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/60 dark:hover:bg-gray-800/60'
-                }`}
-              >
+              }`}
+            >
                 <Icon 
                   className={`h-5 w-5 transition-colors duration-300 ${
                     isActive 
@@ -68,9 +72,9 @@ const Sidebar = () => {
                   }`} 
                 />
                 <span className="transition-colors duration-300">{item.label}</span>
-              </Link>
-            );
-          })}
+            </Link>
+          );
+        })}
         </div>
         
         {/* Bottom Section - Chat Support (Students Only) */}

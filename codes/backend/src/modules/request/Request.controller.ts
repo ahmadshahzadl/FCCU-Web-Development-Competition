@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { RequestService } from './Request.service';
 import { asyncHandler, ValidationError } from '../../middleware/errorHandler';
+import { getSocketService, SocketEvents } from '../../utils/socket';
 
 export class RequestController {
   private requestService: RequestService;
@@ -46,20 +47,42 @@ export class RequestController {
 
   createRequest = asyncHandler(
     async (req: Request, res: Response, _next: NextFunction) => {
-      const { category, description, studentName, studentId } = req.body;
+      const { category, description } = req.body;
+      // Attachment is optional - will be undefined if no file is uploaded
       const attachmentUrl = req.file?.path;
 
       if (!category || !description) {
         throw new ValidationError('Category and description are required');
       }
 
-      const newRequest = await this.requestService.createRequest({
-        category,
-        description,
-        studentName,
-        studentId,
-        attachmentUrl,
-      });
+      if (!req.user) {
+        throw new ValidationError('User not authenticated');
+      }
+
+      // Use authenticated user's information
+      const studentId = req.user.id;
+      const studentName = req.user.name || req.user.username;
+      const createdByUsername = req.user.username;
+
+      const newRequest = await this.requestService.createRequest(
+        {
+          category,
+          description,
+          studentName,
+          studentId,
+          attachmentUrl, // Optional - can be undefined
+        },
+        createdByUsername
+      );
+
+      // Emit socket event for new request
+      try {
+        const socketService = getSocketService();
+        socketService.notifyRequestCreated(newRequest);
+      } catch (error) {
+        // Socket error shouldn't break the request creation
+        console.error('Failed to emit socket event:', error);
+      }
 
       res.status(201).json({
         success: true,
@@ -74,6 +97,15 @@ export class RequestController {
       const updateData = req.body;
 
       const request = await this.requestService.updateRequest(id, updateData);
+
+      // Emit socket event for request update
+      try {
+        const socketService = getSocketService();
+        socketService.notifyRequestUpdated(request, req.user?.username);
+      } catch (error) {
+        // Socket error shouldn't break the request update
+        console.error('Failed to emit socket event:', error);
+      }
 
       res.status(200).json({
         success: true,
@@ -91,11 +123,29 @@ export class RequestController {
         throw new ValidationError('Status is required');
       }
 
+      // Get current request to track status change
+      const currentRequest = await this.requestService.getRequestById(id);
+      const oldStatus = currentRequest.status;
+
       const request = await this.requestService.updateRequestStatus(
         id,
         status,
         adminNotes
       );
+
+      // Emit socket event for status update
+      try {
+        const socketService = getSocketService();
+        socketService.notifyRequestStatusUpdated(
+          request,
+          oldStatus,
+          status,
+          req.user?.username
+        );
+      } catch (error) {
+        // Socket error shouldn't break the status update
+        console.error('Failed to emit socket event:', error);
+      }
 
       res.status(200).json({
         success: true,
@@ -107,7 +157,21 @@ export class RequestController {
   deleteRequest = asyncHandler(
     async (req: Request, res: Response, _next: NextFunction) => {
       const { id } = req.params;
-      await this.requestService.deleteRequest(id);
+
+      if (!req.user) {
+        throw new ValidationError('User not authenticated');
+      }
+
+      await this.requestService.deleteRequest(id, req.user.username);
+
+      // Emit socket event for request deletion
+      try {
+        const socketService = getSocketService();
+        socketService.notifyRequestDeleted(id, req.user.username);
+      } catch (error) {
+        // Socket error shouldn't break the deletion
+        console.error('Failed to emit socket event:', error);
+      }
 
       res.status(200).json({
         success: true,
@@ -124,6 +188,26 @@ export class RequestController {
       res.status(200).json({
         success: true,
         data: requests,
+      });
+    }
+  );
+
+  getRequestCount = asyncHandler(
+    async (req: Request, res: Response, _next: NextFunction) => {
+      const { status, category, studentId } = req.query;
+
+      const query: any = {};
+      if (status) query.status = status;
+      if (category) query.category = category;
+      if (studentId) query.studentId = studentId;
+
+      const count = await this.requestService.getRequestCount(query);
+
+      res.status(200).json({
+        success: true,
+        data: {
+          total: count,
+        },
       });
     }
   );
