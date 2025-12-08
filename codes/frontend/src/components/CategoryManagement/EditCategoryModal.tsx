@@ -1,0 +1,177 @@
+import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
+import type { Category, UpdateCategoryData } from '@/types';
+
+interface EditCategoryModalProps {
+  isOpen: boolean;
+  category: Category;
+  onSubmit: (data: UpdateCategoryData) => Promise<void>;
+  onClose: () => void;
+}
+
+const EditCategoryModal = ({ isOpen, category, onSubmit, onClose }: EditCategoryModalProps) => {
+  const [name, setName] = useState(category.name);
+  const [description, setDescription] = useState(category.description || '');
+  const [isActive, setIsActive] = useState(category.isActive);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    setName(category.name);
+    setDescription(category.description || '');
+    setIsActive(category.isActive);
+  }, [category]);
+
+  // Generate slug preview
+  const generateSlug = (text: string): string => {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!name.trim()) {
+      setError('Category name is required');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await onSubmit({
+        name: name.trim(),
+        description: description.trim() || undefined,
+        isActive,
+      });
+      setError('');
+    } catch (err: any) {
+      // Extract error message from various error formats
+      const errorMessage =
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to update category. Please try again.';
+      
+      setError(errorMessage);
+      
+      // Don't close modal on error, let user see the error and retry
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full transition-colors duration-300">
+        {/* Header */}
+        <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between transition-colors duration-300">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-300">
+            Edit Category
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 hover:scale-110 active:scale-95"
+            aria-label="Close modal"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {error && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm transition-colors duration-300">
+              {error}
+            </div>
+          )}
+
+          {/* Current Slug */}
+          <div className="p-3 bg-gray-50 dark:bg-gray-800/30 rounded-lg">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+              Current Slug
+            </p>
+            <p className="text-sm font-mono text-gray-900 dark:text-white">
+              {category.slug}
+            </p>
+          </div>
+
+          {/* Name */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 transition-colors duration-300">
+              Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="input w-full h-10 text-sm transition-colors duration-300"
+              required
+            />
+            {name !== category.name && (
+              <p className="text-xs text-blue-600 dark:text-blue-400 transition-colors duration-300">
+                New slug will be: <span className="font-mono">{generateSlug(name)}</span>
+              </p>
+            )}
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 transition-colors duration-300">
+              Description
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="input w-full text-sm transition-colors duration-300"
+            />
+          </div>
+
+          {/* Active Status */}
+          <div className="space-y-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
+                className="w-4 h-4 text-primary-600 dark:text-primary-400 border-gray-300 dark:border-gray-700 rounded focus:ring-primary-500 dark:focus:ring-primary-400"
+              />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300">
+                Active
+              </span>
+            </label>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end space-x-2 pt-3 border-t border-gray-200 dark:border-gray-800">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-3 py-1.5 text-sm font-medium text-white bg-primary-600 dark:bg-primary-500 rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default EditCategoryModal;
+

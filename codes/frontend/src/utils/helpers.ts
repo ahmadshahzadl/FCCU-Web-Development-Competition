@@ -28,11 +28,11 @@ export const formatRelativeTime = (date: string | Date): string => {
 // Get status badge color
 export const getStatusColor = (status: RequestStatus): string => {
   const colors = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    'in-progress': 'bg-blue-100 text-blue-800',
-    resolved: 'bg-green-100 text-green-800',
+    pending: 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50',
+    'in-progress': 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50',
+    resolved: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50',
   };
-  return colors[status] || 'bg-gray-100 text-gray-800';
+  return colors[status] || 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700';
 };
 
 // Get category label
@@ -48,10 +48,11 @@ export const getCategoryLabel = (category: RequestCategory): string => {
 
 // Get announcement type label
 export const getAnnouncementTypeLabel = (type: AnnouncementType): string => {
-  const labels = {
+  const labels: Record<AnnouncementType, string> = {
     notice: 'Notice',
     event: 'Event',
     cancellation: 'Cancellation',
+    'request-update': 'Request Update',
   };
   return labels[type] || type;
 };
@@ -59,12 +60,12 @@ export const getAnnouncementTypeLabel = (type: AnnouncementType): string => {
 // Get priority color
 export const getPriorityColor = (priority: string): string => {
   const colors = {
-    low: 'bg-gray-100 text-gray-800',
-    medium: 'bg-yellow-100 text-yellow-800',
-    high: 'bg-orange-100 text-orange-800',
-    urgent: 'bg-red-100 text-red-800',
+    low: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700',
+    medium: 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50',
+    high: 'bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50',
+    urgent: 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800/50',
   };
-  return colors[priority as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+  return colors[priority as keyof typeof colors] || 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700';
 };
 
 // Validate email
@@ -78,7 +79,7 @@ export const debounce = <T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
   return (...args: Parameters<T>) => {
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);

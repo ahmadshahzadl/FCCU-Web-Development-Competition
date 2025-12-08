@@ -17,7 +17,12 @@ Backend API server for the Campus Helper Platform built with Node.js, Express, T
 npm install
 ```
 
-2. Create a `.env` file in the backend directory:
+2. Create a `.env` file in the backend directory (copy from `.env.example`):
+```bash
+cp .env.example .env
+```
+
+Then update the `.env` file with your actual values:
 ```env
 PORT=3000
 NODE_ENV=development
@@ -28,6 +33,14 @@ OPENAI_API_KEY=your_openai_api_key_here
 CORS_ORIGIN=http://localhost:5173
 MAX_FILE_SIZE=5242880
 UPLOAD_PATH=./uploads
+
+# God User Configuration (REQUIRED)
+# These credentials will be used to create the first admin user via seeder
+# IMPORTANT: Use strong, unique credentials!
+GOD_USER_EMAIL=your-god-user-email@example.com
+GOD_USER_USERNAME=your-god-username
+GOD_USER_PASSWORD=your-strong-password-here
+GOD_USER_NAME=God Admin
 ```
 
 3. Start the development server:
@@ -75,6 +88,10 @@ backend/
 - **OpenAI API** - AI chatbot integration
 - **Multer** - File upload handling
 - **JWT** - Authentication
+
+## 📚 Module Documentation
+
+- [Module Documentation](./docs/MODULE_DOCUMENTATION.md) - Complete documentation for all modules
 - **bcryptjs** - Password hashing
 
 ## 📝 API Endpoints

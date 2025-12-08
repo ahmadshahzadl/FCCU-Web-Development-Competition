@@ -1,24 +1,122 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { apiService } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-hot-toast';
-import { Link } from 'react-router-dom';
 import type { ServiceRequest } from '@/types';
-import { getStatusColor, getCategoryLabel, formatDate, generateRequestId } from '@/utils/helpers';
-import { Clock, MessageSquare } from 'lucide-react';
+import { useSocket } from '@/hooks/useSocket';
+import { useStudentSocket } from '@/hooks/useStudentSocket';
+import { storage } from '@/utils/storage';
+import RequestHistoryHeader from '@/components/RequestHistory/RequestHistoryHeader';
+import RequestHistoryCard from '@/components/RequestHistory/RequestHistoryCard';
+import EmptyState from '@/components/RequestHistory/EmptyState';
 
 const RequestHistory = () => {
+  const { user } = useAuth();
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const userId = localStorage.getItem('userId') || 'demo-user'; // Replace with actual user ID
+  const [updatingRequestId, setUpdatingRequestId] = useState<string | null>(null);
+  const socket = useSocket();
+
+  // Use global student socket hook for toasts (shows on all pages)
+  useStudentSocket();
+
+  // Handle request update event (only for UI updates, no toasts here)
+  const handleRequestUpdate = useCallback(
+    (payload: { request: ServiceRequest; updatedBy?: string }) => {
+      const { request } = payload;
+
+      // Only process if it's the current student's request
+      if (!user?.id || request.studentId !== user.id) {
+        return;
+      }
+
+      // Show visual feedback only (toasts are handled by useStudentSocket)
+      setUpdatingRequestId(request._id);
+      setTimeout(() => setUpdatingRequestId(null), 2000);
+
+      // Update the request in the list
+      setRequests((prev) => prev.map((req) => (req._id === request._id ? request : req)));
+    },
+    [user?.id]
+  );
 
   useEffect(() => {
-    fetchUserRequests();
-  }, []);
+    if (user?.id) {
+      fetchUserRequests();
+      loadCategories();
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || !socket || user.role !== 'student') return;
+
+    // Ensure socket is connected
+    if (!socket.isConnected()) {
+      const token = storage.getToken();
+      if (token) {
+        socket.connect(token);
+      }
+    }
+
+    // Student: Listen for updates to own requests (for UI updates only)
+    socket.onUserRequestUpdated(handleRequestUpdate);
+
+    // Student: Listen for confirmation when they create a request
+    const handleRequestCreated = (payload: { request: ServiceRequest }) => {
+      const { request } = payload;
+
+      // Only show if it's the current student's request
+      const isOwnRequest =
+        request.studentId === user.id ||
+        request.studentId === (user as any)._id ||
+        !request.studentId; // If no studentId, assume it's for current user (just created)
+
+      if (isOwnRequest) {
+        toast.success('Request submitted successfully!', {
+          duration: 3000,
+          position: 'top-right',
+          icon: '✅',
+        });
+
+        // Add to list
+        setRequests((prev) => {
+          if (prev.some((r) => r._id === request._id)) {
+            return prev;
+          }
+          return [request, ...prev];
+        });
+      }
+    };
+
+    socket.onRequestCreated(handleRequestCreated);
+
+    return () => {
+      // Cleanup socket listeners on unmount
+      socket.offUserRequestUpdated(handleRequestUpdate);
+      socket.offRequestCreated(handleRequestCreated);
+    };
+  }, [user?.id, user?.role, socket, handleRequestUpdate]);
+
+  const loadCategories = async () => {
+    try {
+      const response = await apiService.getCategories(false);
+      setCategories(response);
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+    }
+  };
+
+  const getCategoryName = (slug: string) => {
+    return categories.find((c) => c.slug === slug)?.name || slug;
+  };
 
   const fetchUserRequests = async () => {
+    if (!user?.id) return;
+
     setLoading(true);
     try {
-      const data = await apiService.getUserRequests(userId);
+      const data = await apiService.getUserRequests(user.id);
       setRequests(data);
     } catch (error: any) {
       toast.error('Failed to fetch request history');
@@ -31,66 +129,28 @@ const RequestHistory = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600">Loading request history...</div>
+        <div className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
+          Loading request history...
+        </div>
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Request History</h1>
+      <RequestHistoryHeader onRefresh={fetchUserRequests} loading={loading} />
 
       <div className="space-y-4">
         {requests.length === 0 ? (
-          <div className="card text-center py-12">
-            <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 mb-4">No requests found</p>
-            <Link to="/request" className="btn btn-primary">
-              Submit Your First Request
-            </Link>
-          </div>
+          <EmptyState />
         ) : (
           requests.map((request) => (
-            <div key={request._id} className="card hover:shadow-lg transition-shadow">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {generateRequestId(request._id)}
-                    </h3>
-                    <span className={`badge ${getStatusColor(request.status)}`}>
-                      {request.status}
-                    </span>
-                    <span className="badge bg-gray-100 text-gray-800">
-                      {getCategoryLabel(request.category)}
-                    </span>
-                  </div>
-                  <p className="text-gray-700 mb-2">{request.description}</p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span>Created: {formatDate(request.createdAt)}</span>
-                    {request.updatedAt !== request.createdAt && (
-                      <span>Updated: {formatDate(request.updatedAt)}</span>
-                    )}
-                    {request.resolvedAt && (
-                      <span>Resolved: {formatDate(request.resolvedAt)}</span>
-                    )}
-                  </div>
-                </div>
-                <Link
-                  to={`/chat/${request._id}`}
-                  className="btn btn-secondary flex items-center space-x-2"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Chat</span>
-                </Link>
-              </div>
-              {request.adminNotes && (
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm font-medium text-blue-900 mb-1">Admin Notes:</p>
-                  <p className="text-sm text-blue-800">{request.adminNotes}</p>
-                </div>
-              )}
-            </div>
+            <RequestHistoryCard
+              key={request._id}
+              request={request}
+              categoryName={getCategoryName(request.category)}
+              isUpdating={updatingRequestId === request._id}
+            />
           ))
         )}
       </div>
@@ -99,4 +159,3 @@ const RequestHistory = () => {
 };
 
 export default RequestHistory;
-

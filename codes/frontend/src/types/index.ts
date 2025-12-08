@@ -1,11 +1,34 @@
+// Category Types
+export interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCategoryData {
+  name: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface UpdateCategoryData {
+  name?: string;
+  description?: string;
+  isActive?: boolean;
+}
+
 // Request Types
-export type RequestCategory = 'maintenance' | 'academic' | 'lost-found' | 'general';
+export type RequestCategory = 'maintenance' | 'academic' | 'lost-found' | 'general'; // Legacy type for backward compatibility
 export type RequestStatus = 'pending' | 'in-progress' | 'resolved';
 export type RequestPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface ServiceRequest {
   _id: string;
-  category: RequestCategory;
+  category: string; // Category slug (dynamic)
   description: string;
   status: RequestStatus;
   studentId?: string;
@@ -18,6 +41,23 @@ export interface ServiceRequest {
   resolvedAt?: string;
 }
 
+export interface UpdateRequestStatusData {
+  status: RequestStatus;
+  adminNotes?: string;
+}
+
+export interface GetRequestsQuery {
+  status?: RequestStatus;
+  category?: string; // Category slug
+  studentId?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface RequestCountResponse {
+  total: number;
+}
+
 export interface CreateRequestDto {
   category: RequestCategory;
   description: string;
@@ -26,8 +66,9 @@ export interface CreateRequestDto {
 }
 
 // Announcement Types
-export type AnnouncementType = 'notice' | 'event' | 'cancellation';
+export type AnnouncementType = 'notice' | 'event' | 'cancellation' | 'request-update';
 export type AnnouncementPriority = 'high' | 'medium' | 'low';
+export type AnnouncementTarget = 'all' | 'roles' | 'users';
 
 export interface Announcement {
   _id: string;
@@ -35,7 +76,33 @@ export interface Announcement {
   content: string;
   type: AnnouncementType;
   priority: AnnouncementPriority;
+  target: AnnouncementTarget;
+  targetRoles?: UserRole[];
+  targetUserIds?: string[];
+  createdBy: string;
+  createdByRole: UserRole;
+  relatedRequestId?: string;
+  readBy?: string[];
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAnnouncementData {
+  title: string;
+  content: string;
+  type?: AnnouncementType;
+  priority?: AnnouncementPriority;
+  target: AnnouncementTarget;
+  targetRoles?: UserRole[];
+  targetUserIds?: string[];
+}
+
+export interface AnnouncementCreatedPayload {
+  announcement: Announcement;
+}
+
+export interface AnnouncementDeletedPayload {
+  announcementId: string;
 }
 
 // Chat Types
@@ -110,20 +177,151 @@ export interface TrendData {
 }
 
 // User Types
+export type UserRole = 'admin' | 'student' | 'team' | 'manager';
+
+/**
+ * User data structure returned from the API
+ * Matches backend API response format
+ */
 export interface User {
-  _id: string;
-  name: string;
+  id: string;
   email: string;
-  role: 'student' | 'admin';
+  username: string;
+  name?: string;
+  role: UserRole;
+  studentId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/**
+ * Create user request payload
+ */
+export interface CreateUserRequest {
+  email: string;
+  username: string;
+  password: string;
+  name?: string;
+  role: UserRole;
   studentId?: string;
 }
 
-// API Response Types
-export interface ApiResponse<T> {
-  success: boolean;
+/**
+ * Update user request payload
+ */
+export interface UpdateUserRequest {
+  email?: string;
+  username?: string;
+  name?: string;
+  role?: UserRole;
+  studentId?: string;
+}
+
+/**
+ * Update profile request payload (for Student/Team/Manager own profile)
+ * Email and username can only be updated by admin role
+ */
+// System Configuration Types
+export interface SystemConfig {
+  _id: string;
+  projectName: string;
+  logoUrl?: string;
+  allowedEmailDomains: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateProjectNameRequest {
+  projectName: string;
+}
+
+export interface UpdateLogoRequest {
+  logo: string;
+}
+
+export interface AddEmailDomainRequest {
+  domain: string;
+}
+
+export interface RemoveEmailDomainRequest {
+  domain: string;
+}
+
+// Public System Configuration (read-only, no auth required)
+export interface PublicSystemConfig {
+  projectName: string;
+  logoUrl?: string;
+}
+
+export interface UpdateProfileRequest {
+  name?: string;
+  password?: string;
+  email?: string; // Only for admin
+  username?: string; // Only for admin
+}
+
+/**
+ * User statistics for admin dashboard
+ */
+export interface UserStats {
+  total: number;
+  byRole: {
+    admin: number;
+    manager: number;
+    team: number;
+    student: number;
+  };
+}
+
+/**
+ * Sign-in request payload
+ */
+export interface SignInRequest {
+  email: string;
+  password: string;
+}
+
+/**
+ * Sign-in response data structure
+ * Matches backend API response format
+ */
+export interface SignInResponseData {
+  user: User;
+  token: string;
+}
+
+/**
+ * API Success Response wrapper
+ */
+export interface ApiSuccessResponse<T> {
+  success: true;
   data: T;
   message?: string;
 }
+
+/**
+ * API Error Response wrapper
+ */
+export interface ApiErrorResponse {
+  success: false;
+  message: string;
+  error?: any;
+  stack?: string; // Only in development
+}
+
+/**
+ * Sign-in API response
+ */
+export interface SignInResponse extends ApiSuccessResponse<SignInResponseData> {}
+
+/**
+ * Generic API Response type
+ */
+export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+// Legacy types for backward compatibility
+export interface LoginCredentials extends SignInRequest {}
+export interface LoginResponse extends SignInResponseData {}
 
 export interface PaginatedResponse<T> {
   data: T[];
