@@ -3,8 +3,15 @@ import { NotFoundError, ConflictError, ValidationError } from '../../middleware/
 import type { CreateUserInput, UpdateUserInput, UserRole } from '../auth/types';
 import bcrypt from 'bcryptjs';
 import { env } from '../../config/env';
+import { SystemConfigService } from '../systemConfig/SystemConfig.service';
 
 export class UserService {
+  private systemConfigService: SystemConfigService;
+
+  constructor() {
+    this.systemConfigService = new SystemConfigService();
+  }
+
   // Get all users with filters and pagination
   async getAllUsers(
     query: any,
@@ -171,6 +178,15 @@ export class UserService {
     if (currentUserRole === 'manager') {
       if (!['team', 'student'].includes(data.role)) {
         throw new ValidationError('Manager can only create team and student users');
+      }
+      
+      // Validate email domain for managers
+      const isValidDomain = await this.systemConfigService.validateEmailDomain(data.email);
+      if (!isValidDomain) {
+        const config = await this.systemConfigService.getConfig();
+        throw new ValidationError(
+          `Email domain not allowed. Allowed domains: ${config.allowedEmailDomains.join(', ') || 'None configured. Please contact admin.'}`
+        );
       }
     } else if (currentUserRole !== 'admin') {
       throw new ValidationError('You do not have permission to create users');
