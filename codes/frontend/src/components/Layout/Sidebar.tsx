@@ -7,6 +7,8 @@ import {
   History,
   BarChart3,
   MessageSquare,
+  Users,
+  UserCircle,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import type { UserRole } from '@/types';
@@ -30,6 +32,8 @@ const Sidebar = () => {
     { path: '/announcements', label: 'Announcements', icon: Bell },
     { path: '/history', label: 'Request History', icon: History },
     { path: '/analytics', label: 'Analytics', icon: BarChart3, roles: ['admin', 'manager'] },
+    { path: '/profile', label: 'My Profile', icon: UserCircle },
+    { path: '/users', label: 'User Management', icon: Users, roles: ['admin', 'manager'] },
   ];
 
   // Filter menu items based on user role

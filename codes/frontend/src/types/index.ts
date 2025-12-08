@@ -123,6 +123,55 @@ export interface User {
   name?: string;
   role: UserRole;
   studentId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/**
+ * Create user request payload
+ */
+export interface CreateUserRequest {
+  email: string;
+  username: string;
+  password: string;
+  name?: string;
+  role: UserRole;
+  studentId?: string;
+}
+
+/**
+ * Update user request payload
+ */
+export interface UpdateUserRequest {
+  email?: string;
+  username?: string;
+  name?: string;
+  role?: UserRole;
+  studentId?: string;
+}
+
+/**
+ * Update profile request payload (for Student/Team/Manager own profile)
+ * Email and username can only be updated by admin role
+ */
+export interface UpdateProfileRequest {
+  name?: string;
+  password?: string;
+  email?: string; // Only for admin
+  username?: string; // Only for admin
+}
+
+/**
+ * User statistics for admin dashboard
+ */
+export interface UserStats {
+  total: number;
+  byRole: {
+    admin: number;
+    manager: number;
+    team: number;
+    student: number;
+  };
 }
 
 /**

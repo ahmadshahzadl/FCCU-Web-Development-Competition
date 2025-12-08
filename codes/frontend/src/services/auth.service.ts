@@ -47,25 +47,94 @@ class AuthService {
   }
 
   /**
+   * Transform backend user data (_id) to frontend format (id)
+   */
+  private transformUser(user: any): User {
+    if (!user) return user;
+    // Handle both _id (backend) and id (frontend) formats
+    const id = user.id || user._id;
+    return {
+      ...user,
+      id,
+    };
+  }
+
+  /**
    * Get current authenticated user
+   * Uses /users/me endpoint (same as getProfile)
    * 
    * @returns Promise resolving to current user data
    * @throws Error if user is not authenticated or request fails
    */
   async getCurrentUser(): Promise<User> {
     try {
-      const response = await apiClient.get<{ user: User }>('/auth/me');
+      // Use /users/me endpoint instead of /auth/me (which doesn't exist)
+      const response = await apiClient.get<any>('/users/me');
       
       if (!response.success || !response.data) {
         throw new Error(response.message || 'Failed to fetch user data');
       }
 
-      return response.data.user;
+      // Transform backend response (_id) to frontend format (id)
+      return this.transformUser(response.data);
     } catch (error: any) {
       const errorMessage = 
         error.response?.data?.message || 
         error.message || 
         'Failed to fetch user data';
+      
+      throw new Error(errorMessage);
+    }
+  }
+
+  /**
+   * Get current user profile
+   * Uses /users/me endpoint for profile information
+   * 
+   * @returns Promise resolving to current user profile data
+   * @throws Error if request fails
+   */
+  async getProfile(): Promise<User> {
+    try {
+      const response = await apiClient.get<any>('/users/me');
+      
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Failed to fetch profile');
+      }
+
+      // Transform backend response (_id) to frontend format (id)
+      return this.transformUser(response.data);
+    } catch (error: any) {
+      const errorMessage = 
+        error.response?.data?.message || 
+        error.message || 
+        'Failed to fetch profile';
+      
+      throw new Error(errorMessage);
+    }
+  }
+
+  /**
+   * Update current user profile
+   * 
+   * @param data - Profile update data (name and/or password)
+   * @returns Promise resolving to updated user data
+   * @throws Error if update fails
+   */
+  async updateProfile(data: { name?: string; password?: string }): Promise<User> {
+    try {
+      const response = await apiClient.put<User>('/users/me', data);
+      
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Failed to update profile');
+      }
+
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = 
+        error.response?.data?.message || 
+        error.message || 
+        'Failed to update profile';
       
       throw new Error(errorMessage);
     }

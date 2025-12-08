@@ -140,8 +140,26 @@ class ApiClient {
       );
     }
 
+    // Handle 429 Too Many Requests (Rate Limiting)
+    if (status === 429) {
+      const retryAfter = error.response?.headers?.['retry-after'] || 
+                        error.response?.headers?.['Retry-After'] ||
+                        responseData?.retryAfter;
+      const retryMessage = retryAfter 
+        ? `Too many requests. Please try again after ${retryAfter} seconds.`
+        : 'Too many requests. Please wait a moment before trying again.';
+      return new Error(retryMessage);
+    }
+
     // Handle 400 Bad Request
     if (status === 400) {
+      // Check if it's a route configuration issue (Invalid _id: me)
+      const message = responseData?.message || '';
+      if (message.includes('Invalid _id') || message.includes('Invalid id')) {
+        return new Error(
+          `Backend route configuration issue: ${message}. The /api/users/me route must be defined before /api/users/:id route.`
+        );
+      }
       return new Error(
         responseData?.message || 'Invalid request. Please check your input.'
       );
@@ -163,6 +181,7 @@ class ApiClient {
   /**
    * Handle unauthorized access (401)
    * Clears authentication data and redirects to login
+   * Note: Uses a delayed redirect to allow React Router to handle navigation first
    */
   private handleUnauthorized(): void {
     // Clear authentication data
@@ -171,8 +190,17 @@ class ApiClient {
     localStorage.removeItem('userId');
 
     // Only redirect if we're not already on the login page
+    // Use a delay to allow React Router ProtectedRoute to handle the redirect first
+    // This prevents double redirects and allows components to handle errors gracefully
     if (window.location.pathname !== '/login') {
-      window.location.href = '/login';
+      // Use setTimeout to allow React Router to handle navigation first
+      // ProtectedRoute will detect isAuthenticated is false and redirect
+      setTimeout(() => {
+        // Only redirect if still not on login page (React Router didn't handle it)
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+          window.location.href = '/login';
+        }
+      }, 200);
     }
   }
 

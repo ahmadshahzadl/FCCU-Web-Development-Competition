@@ -20,8 +20,8 @@ interface AuthContextType {
   user: User | null;
   /** Loading state for authentication operations */
   loading: boolean;
-  /** Sign in function */
-  signIn: (credentials: SignInRequest) => Promise<void>;
+  /** Sign in function - returns user data for role-based redirects */
+  signIn: (credentials: SignInRequest) => Promise<User>;
   /** Sign out function */
   signOut: () => void;
   /** Check if user is authenticated */
@@ -95,9 +95,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
    * Sign in user with email and password
    * 
    * @param credentials - User email and password
+   * @returns Promise resolving to user data for role-based redirects
    * @throws Error if sign-in fails
    */
-  const signIn = useCallback(async (credentials: SignInRequest): Promise<void> => {
+  const signIn = useCallback(async (credentials: SignInRequest): Promise<User> => {
     try {
       setLoading(true);
 
@@ -118,13 +119,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Update state
       setUser(userData);
 
-      // Show success message
+      // Show success message with role-specific greeting
       const userName = userData.name || userData.username || userData.email;
-      toast.success(`Welcome back, ${userName}!`);
+      const roleGreeting = userData.role === 'admin' ? 'Admin' : 
+                          userData.role === 'manager' ? 'Manager' :
+                          userData.role === 'team' ? 'Team Member' : 'Student';
+      toast.success(`Welcome back, ${userName}! (${roleGreeting})`);
+
+      // Return user data for role-based redirects
+      return userData;
     } catch (error: any) {
       // Error message is already formatted by authService
       const errorMessage = error.message || 'Sign in failed. Please check your credentials.';
-      toast.error(errorMessage);
+      
+      // Don't show toast for rate limiting errors - let Login page handle it with retry timer
+      if (!errorMessage.includes('Too many requests') && !errorMessage.includes('try again after')) {
+        toast.error(errorMessage);
+      }
+      
       throw error;
     } finally {
       setLoading(false);

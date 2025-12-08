@@ -17,6 +17,11 @@ import type {
   StatusStats,
   TrendData,
   Notification,
+  User,
+  CreateUserRequest,
+  UpdateUserRequest,
+  UpdateProfileRequest,
+  UserStats,
 } from '@/types';
 
 /**
@@ -207,6 +212,104 @@ class ApiService {
    */
   async deleteNotification(id: string): Promise<void> {
     await apiClient.delete<void>(`/notifications/${id}`);
+  }
+
+  // ==================== User Management (Admin Only) ====================
+
+  /**
+   * Get all users with optional filters
+   */
+  async getUsers(params?: {
+    role?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<User[]> {
+    const response = await apiClient.get<User[]>('/users', {
+      params,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get user statistics
+   */
+  async getUserStats(): Promise<UserStats> {
+    const response = await apiClient.get<UserStats>('/users/stats');
+    return response.data;
+  }
+
+  /**
+   * Get a single user by ID
+   */
+  async getUserById(id: string): Promise<User> {
+    const response = await apiClient.get<User>(`/users/${id}`);
+    return response.data;
+  }
+
+  /**
+   * Create a new user
+   */
+  async createUser(data: CreateUserRequest): Promise<User> {
+    const response = await apiClient.post<User>('/users', data);
+    return response.data;
+  }
+
+  /**
+   * Update a user
+   */
+  async updateUser(id: string, data: UpdateUserRequest): Promise<User> {
+    const response = await apiClient.put<User>(`/users/${id}`, data);
+    return response.data;
+  }
+
+  /**
+   * Delete a user
+   */
+  async deleteUser(id: string): Promise<void> {
+    await apiClient.delete<void>(`/users/${id}`);
+  }
+
+  /**
+   * Update user role
+   */
+  async updateUserRole(id: string, role: string): Promise<User> {
+    const response = await apiClient.put<User>(`/users/${id}/role`, { role });
+    return response.data;
+  }
+
+  // ==================== User Profile (All Roles) ====================
+
+  /**
+   * Transform backend user data (_id) to frontend format (id)
+   */
+  private transformUser(user: any): User {
+    if (!user) return user;
+    // Handle both _id (backend) and id (frontend) formats
+    const id = user.id || user._id || user.id;
+    return {
+      ...user,
+      id,
+    };
+  }
+
+  /**
+   * Get current user profile
+   * Accessible by all authenticated users
+   */
+  async getProfile(): Promise<User> {
+    const response = await apiClient.get<any>('/users/me');
+    return this.transformUser(response.data);
+  }
+
+  /**
+   * Update current user profile
+   * Students/Team/Manager can only update name and password
+   * Admins can update name, password, email, and username
+   */
+  async updateProfile(data: UpdateProfileRequest): Promise<User> {
+    const response = await apiClient.put<any>('/users/me', data);
+    return this.transformUser(response.data);
   }
 }
 

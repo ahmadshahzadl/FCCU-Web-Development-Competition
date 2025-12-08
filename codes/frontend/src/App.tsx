@@ -14,6 +14,8 @@ import Announcements from './pages/Announcements';
 import RequestHistory from './pages/RequestHistory';
 import Analytics from './pages/Analytics';
 import Chat from './pages/Chat';
+import UserManagement from './pages/UserManagement';
+import Profile from './pages/Profile';
 import Chatbot from './components/Chatbot/Chatbot';
 
 const ToasterWithTheme = () => {
@@ -48,12 +50,15 @@ const ToasterWithTheme = () => {
 };
 
 const AppRoutes = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600 dark:text-gray-400">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400 mx-auto mb-4"></div>
+          <div className="text-gray-600 dark:text-gray-400">Loading...</div>
+        </div>
       </div>
     );
   }
@@ -143,6 +148,30 @@ const AppRoutes = () => {
           <ProtectedRoute allowedRoles={['admin', 'manager']}>
             <Layout>
               <Analytics />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected Routes - Profile (All Roles) */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute allowedRoles={['student', 'admin', 'team', 'manager']}>
+            <Layout>
+              <Profile />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected Routes - Admin and Manager */}
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'manager']}>
+            <Layout>
+              <UserManagement />
             </Layout>
           </ProtectedRoute>
         }
