@@ -2,7 +2,6 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export type RequestCategory = 'maintenance' | 'academic' | 'lost-found' | 'general';
 export type RequestStatus = 'pending' | 'in-progress' | 'resolved';
-export type RequestPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface IRequest extends Document {
   category: RequestCategory;
@@ -12,8 +11,10 @@ export interface IRequest extends Document {
   studentName?: string;
   attachmentUrl?: string;
   adminNotes?: string;
-  priority: RequestPriority;
   resolvedAt?: Date;
+  createdBy?: string; // Username of user who created this request
+  deletedBy?: string; // Username of user who deleted this request
+  deletedAt?: Date; // When request was deleted
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,12 +51,20 @@ const RequestSchema: Schema = new Schema(
       type: String,
       trim: true,
     },
-    priority: {
-      type: String,
-      enum: ['low', 'medium', 'high', 'urgent'],
-      default: 'medium',
-    },
     resolvedAt: {
+      type: Date,
+    },
+    createdBy: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+    deletedBy: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+    deletedAt: {
       type: Date,
     },
   },
@@ -69,6 +78,8 @@ RequestSchema.index({ studentId: 1 });
 RequestSchema.index({ status: 1 });
 RequestSchema.index({ category: 1 });
 RequestSchema.index({ createdAt: -1 });
+RequestSchema.index({ createdBy: 1 }); // Index for audit queries
+RequestSchema.index({ deletedBy: 1 }); // Index for audit queries
 
 export const Request = mongoose.model<IRequest>(
   'ServiceRequest',

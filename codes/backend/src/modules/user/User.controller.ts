@@ -93,7 +93,8 @@ export class UserController {
           name: name?.trim(),
           role,
         },
-        req.user.role
+        req.user.role,
+        req.user.username // Pass current user username for audit log
       );
 
       res.status(201).json({
@@ -165,7 +166,7 @@ export class UserController {
         throw new ValidationError('User not authenticated');
       }
 
-      await this.userService.deleteUser(id, req.user.role);
+      await this.userService.deleteUser(id, req.user.role, req.user.username); // Pass current user username for audit log
 
       res.status(200).json({
         success: true,

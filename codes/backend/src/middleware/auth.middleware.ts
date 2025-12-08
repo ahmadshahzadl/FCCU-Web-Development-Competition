@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { UnauthorizedError } from './errorHandler';
-import { User } from '../modules/auth/User.model';
+import { User } from '../modules/user/User.model';
 import type { JWTPayload, UserRole } from '../modules/auth/types';
 
 // Extend Express Request to include user data

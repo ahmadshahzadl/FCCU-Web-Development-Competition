@@ -1,4 +1,4 @@
-import { User, IUser } from './User.model';
+import { User, IUser } from '../user/User.model';
 import jwt from 'jsonwebtoken';
 import { env } from '../../config/env';
 import { UnauthorizedError, NotFoundError } from '../../middleware/errorHandler';
