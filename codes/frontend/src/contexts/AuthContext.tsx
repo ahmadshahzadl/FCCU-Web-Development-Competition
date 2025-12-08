@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast';
 import { authService } from '@/services/auth.service';
 import { storage } from '@/utils/storage';
 import { isTokenValid } from '@/utils/token';
+import { socketService } from '@/services/socket';
 import type { User, SignInRequest, UserRole } from '@/types';
 
 /**
@@ -73,16 +74,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           // Check if token is still valid
           if (isTokenValid(token)) {
             setUser(storedUser);
+            
+            // Connect socket with stored token
+            try {
+              socketService.connect(token);
+              console.log('Socket connected on app load');
+            } catch (error) {
+              console.error('Failed to connect socket on load:', error);
+            }
+            
             // Optionally refresh user data from API
             // await refreshUser();
           } else {
             // Token expired, clear storage
             storage.clearAuth();
+            socketService.disconnect();
           }
         }
       } catch (error) {
         console.error('Error loading auth state:', error);
         storage.clearAuth();
+        socketService.disconnect();
       } finally {
         setLoading(false);
       }
@@ -119,6 +131,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Update state
       setUser(userData);
 
+      // Connect socket with authentication token
+      try {
+        socketService.connect(token);
+        console.log('Socket connected after sign in');
+      } catch (error) {
+        console.error('Failed to connect socket:', error);
+        // Don't fail sign-in if socket connection fails
+      }
+
       // Show success message with role-specific greeting
       const userName = userData.name || userData.username || userData.email;
       const roleGreeting = userData.role === 'admin' ? 'Admin' : 
@@ -148,6 +169,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
    */
   const signOut = useCallback(() => {
     try {
+      // Disconnect socket
+      socketService.disconnect();
+      console.log('Socket disconnected on sign out');
+
       // Clear storage
       storage.clearAuth();
 

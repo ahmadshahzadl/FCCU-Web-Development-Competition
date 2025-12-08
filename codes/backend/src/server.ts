@@ -87,9 +87,15 @@ io.on('connection', (socket) => {
 
   // Join user-specific room
   socket.join(`user:${user.id}`);
+  console.log(`[Socket] User ${user.username} joined room: user:${user.id}`);
 
   // Join role-based rooms
   socket.join(`role:${user.role}`);
+  console.log(`[Socket] User ${user.username} joined room: role:${user.role}`);
+  
+  // Verify room membership
+  const rooms = Array.from(socket.rooms);
+  console.log(`[Socket] User ${user.username} is in rooms:`, rooms);
 
   // Handle joining request-specific room (for team members viewing a request)
   socket.on('join:request', (requestId: string) => {

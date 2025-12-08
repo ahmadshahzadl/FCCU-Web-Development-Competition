@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiService } from '@/services/api';
-import { socketService } from '@/services/socket';
-import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-hot-toast';
-import { RefreshCw, Eye, Edit, Trash2, Filter } from 'lucide-react';
 import type { ServiceRequest, RequestStatus, Category } from '@/types';
 import { useSocket } from '@/hooks/useSocket';
+import { useTeamSocket } from '@/hooks/useTeamSocket';
+import TeamRequestsHeader from '@/components/TeamRequests/TeamRequestsHeader';
 import RequestFilters from '@/components/RequestManagement/RequestFilters';
 import RequestTable from '@/components/RequestManagement/RequestTable';
 import RequestDetailsModal from '@/components/RequestManagement/RequestDetailsModal';
@@ -13,7 +12,6 @@ import UpdateRequestStatusModal from '@/components/RequestManagement/UpdateReque
 import DeleteConfirmationModal from '@/components/RequestManagement/DeleteConfirmationModal';
 
 const TeamRequestsList = () => {
-  const { user } = useAuth();
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +40,17 @@ const TeamRequestsList = () => {
   const [viewingRequestId, setViewingRequestId] = useState<string | null>(null);
   
   const socket = useSocket();
+  const filtersRef = useRef(filters);
+  const paginationRef = useRef(pagination);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
+
+  useEffect(() => {
+    paginationRef.current = pagination;
+  }, [pagination]);
 
   useEffect(() => {
     loadCategories();
@@ -50,6 +59,40 @@ const TeamRequestsList = () => {
   useEffect(() => {
     loadRequests();
   }, [filters]);
+
+  // Define handleRequestResolved before it's used in useEffect
+  const handleRequestResolved = useCallback(
+    (payload: {
+      request: ServiceRequest;
+      oldStatus: string;
+      newStatus: 'resolved';
+      updatedBy?: string;
+    }) => {
+      setRequests((prev) =>
+        prev.map((req) => (req._id === payload.request._id ? payload.request : req))
+      );
+
+      setSelectedRequest((prev) => {
+        if (prev?._id === payload.request._id) {
+          toast('This request has been resolved!', {
+            duration: 5000,
+            icon: '⚠️',
+          });
+          return payload.request;
+        }
+        return prev;
+      });
+    },
+    []
+  );
+
+  // Use team socket hook for connection and event handling
+  const { connected } = useTeamSocket({
+    filtersRef,
+    paginationRef,
+    setRequests,
+    setPagination,
+  });
 
   useEffect(() => {
     if (!socket) return;
@@ -68,7 +111,7 @@ const TeamRequestsList = () => {
       socket.offRequestResolved(handleRequestResolved);
       setViewingRequestId(null);
     }
-  }, [selectedRequest, viewingRequestId, socket]);
+  }, [selectedRequest, viewingRequestId, socket, handleRequestResolved]);
 
   const loadCategories = async () => {
     try {
@@ -112,77 +155,6 @@ const TeamRequestsList = () => {
       setLoading(false);
     }
   };
-
-  const handleRequestCreated = useCallback((payload: { request: ServiceRequest }) => {
-    // Only add if it matches current filters
-    const matchesFilters =
-      (!filters.status || payload.request.status === filters.status) &&
-      (!filters.category || payload.request.category === filters.category);
-
-    if (matchesFilters) {
-      setRequests((prev) => [payload.request, ...prev]);
-      toast.success(`New request: ${payload.request.description.substring(0, 50)}...`);
-    }
-  }, [filters.status, filters.category]);
-
-  const handleRequestUpdated = useCallback((payload: { request: ServiceRequest; updatedBy?: string }) => {
-    setRequests((prev) =>
-      prev.map((req) => (req._id === payload.request._id ? payload.request : req))
-    );
-  }, []);
-
-  const handleRequestDeleted = useCallback((payload: { requestId: string; deletedBy?: string }) => {
-    setRequests((prev) => prev.filter((req) => req._id !== payload.requestId));
-    setSelectedRequest((prev) => {
-      if (prev?._id === payload.requestId) {
-        setViewingRequestId(null);
-        return null;
-      }
-      return prev;
-    });
-  }, []);
-
-  const handleRequestResolved = useCallback((payload: {
-    request: ServiceRequest;
-    oldStatus: string;
-    newStatus: 'resolved';
-    updatedBy?: string;
-  }) => {
-    setRequests((prev) =>
-      prev.map((req) => (req._id === payload.request._id ? payload.request : req))
-    );
-    
-    setSelectedRequest((prev) => {
-      if (prev?._id === payload.request._id) {
-        toast.warning('This request has been resolved!', {
-          duration: 5000,
-        });
-        return payload.request;
-      }
-      return prev;
-    });
-  }, []);
-
-  // Setup socket listeners
-  useEffect(() => {
-    if (!socket) return;
-    
-    // Listen for new requests
-    socket.onRequestCreated(handleRequestCreated);
-
-    // Listen for request updates
-    socket.onRequestUpdated(handleRequestUpdated);
-
-    // Listen for request deletions
-    socket.onRequestDeleted(handleRequestDeleted);
-
-    return () => {
-      // Cleanup socket listeners
-      socket.offRequestCreated(handleRequestCreated);
-      socket.offRequestUpdated(handleRequestUpdated);
-      socket.offRequestDeleted(handleRequestDeleted);
-    };
-  }, [socket, handleRequestCreated, handleRequestUpdated, handleRequestDeleted]);
 
   const handleView = (request: ServiceRequest) => {
     setSelectedRequest(request);
@@ -239,23 +211,7 @@ const TeamRequestsList = () => {
   return (
     <div className="w-full space-y-4 md:space-y-6 px-2 md:px-0 transition-colors duration-300">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors duration-300">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
-            Requests Management
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">
-            View and manage service requests
-          </p>
-        </div>
-        <button
-          onClick={loadRequests}
-          className="btn btn-secondary flex items-center space-x-2 text-sm px-3 py-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          <span className="hidden sm:inline">Refresh</span>
-        </button>
-      </div>
+      <TeamRequestsHeader connected={connected} onRefresh={loadRequests} />
 
       {/* Filters */}
       <RequestFilters

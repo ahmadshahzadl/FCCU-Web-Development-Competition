@@ -2,45 +2,44 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiService } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-hot-toast';
-import { Link } from 'react-router-dom';
 import type { ServiceRequest } from '@/types';
-import { getStatusColor, formatDate, generateRequestId } from '@/utils/helpers';
-import { Clock, MessageSquare, ExternalLink } from 'lucide-react';
 import { useSocket } from '@/hooks/useSocket';
+import { useStudentSocket } from '@/hooks/useStudentSocket';
+import { storage } from '@/utils/storage';
+import RequestHistoryHeader from '@/components/RequestHistory/RequestHistoryHeader';
+import RequestHistoryCard from '@/components/RequestHistory/RequestHistoryCard';
+import EmptyState from '@/components/RequestHistory/EmptyState';
 
 const RequestHistory = () => {
   const { user } = useAuth();
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatingRequestId, setUpdatingRequestId] = useState<string | null>(null);
   const socket = useSocket();
 
-  const handleRequestUpdate = useCallback((payload: { request: ServiceRequest; updatedBy?: string }) => {
-    const { request } = payload;
-    
-    // Update the request in the list
-    setRequests((prev) =>
-      prev.map((req) => (req._id === request._id ? request : req))
-    );
+  // Use global student socket hook for toasts (shows on all pages)
+  useStudentSocket();
 
-    // Show toast notification based on status
-    if (request.status === 'resolved') {
-      toast.success(
-        `Your request has been resolved!${request.adminNotes ? ` Notes: ${request.adminNotes}` : ''}`,
-        {
-          duration: 5000,
-        }
-      );
-    } else if (request.status === 'in-progress') {
-      toast.info('Your request is now in progress!', {
-        duration: 3000,
-      });
-    } else {
-      toast.info('Your request has been updated.', {
-        duration: 3000,
-      });
-    }
-  }, []);
+  // Handle request update event (only for UI updates, no toasts here)
+  const handleRequestUpdate = useCallback(
+    (payload: { request: ServiceRequest; updatedBy?: string }) => {
+      const { request } = payload;
+
+      // Only process if it's the current student's request
+      if (!user?.id || request.studentId !== user.id) {
+        return;
+      }
+
+      // Show visual feedback only (toasts are handled by useStudentSocket)
+      setUpdatingRequestId(request._id);
+      setTimeout(() => setUpdatingRequestId(null), 2000);
+
+      // Update the request in the list
+      setRequests((prev) => prev.map((req) => (req._id === request._id ? request : req)));
+    },
+    [user?.id]
+  );
 
   useEffect(() => {
     if (user?.id) {
@@ -50,16 +49,54 @@ const RequestHistory = () => {
   }, [user?.id]);
 
   useEffect(() => {
-    if (user?.id && socket) {
-      // Setup socket listeners
-      socket.onUserRequestUpdated(handleRequestUpdate);
+    if (!user?.id || !socket || user.role !== 'student') return;
 
-      return () => {
-        // Cleanup socket listeners
-        socket.offUserRequestUpdated(handleRequestUpdate);
-      };
+    // Ensure socket is connected
+    if (!socket.isConnected()) {
+      const token = storage.getToken();
+      if (token) {
+        socket.connect(token);
+      }
     }
-  }, [user?.id, socket, handleRequestUpdate]);
+
+    // Student: Listen for updates to own requests (for UI updates only)
+    socket.onUserRequestUpdated(handleRequestUpdate);
+
+    // Student: Listen for confirmation when they create a request
+    const handleRequestCreated = (payload: { request: ServiceRequest }) => {
+      const { request } = payload;
+
+      // Only show if it's the current student's request
+      const isOwnRequest =
+        request.studentId === user.id ||
+        request.studentId === (user as any)._id ||
+        !request.studentId; // If no studentId, assume it's for current user (just created)
+
+      if (isOwnRequest) {
+        toast.success('Request submitted successfully!', {
+          duration: 3000,
+          position: 'top-right',
+          icon: '✅',
+        });
+
+        // Add to list
+        setRequests((prev) => {
+          if (prev.some((r) => r._id === request._id)) {
+            return prev;
+          }
+          return [request, ...prev];
+        });
+      }
+    };
+
+    socket.onRequestCreated(handleRequestCreated);
+
+    return () => {
+      // Cleanup socket listeners on unmount
+      socket.offUserRequestUpdated(handleRequestUpdate);
+      socket.offRequestCreated(handleRequestCreated);
+    };
+  }, [user?.id, user?.role, socket, handleRequestUpdate]);
 
   const loadCategories = async () => {
     try {
@@ -76,7 +113,7 @@ const RequestHistory = () => {
 
   const fetchUserRequests = async () => {
     if (!user?.id) return;
-    
+
     setLoading(true);
     try {
       const data = await apiService.getUserRequests(user.id);
@@ -88,7 +125,6 @@ const RequestHistory = () => {
       setLoading(false);
     }
   };
-
 
   if (loading) {
     return (
@@ -102,83 +138,19 @@ const RequestHistory = () => {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-300">
-        Request History
-      </h1>
+      <RequestHistoryHeader onRefresh={fetchUserRequests} loading={loading} />
 
       <div className="space-y-4">
         {requests.length === 0 ? (
-          <div className="card text-center py-12">
-            <Clock className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4 transition-colors duration-300" />
-            <p className="text-gray-600 dark:text-gray-400 mb-4 transition-colors duration-300">
-              No requests found
-            </p>
-            <Link to="/request" className="btn btn-primary">
-              Submit Your First Request
-            </Link>
-          </div>
+          <EmptyState />
         ) : (
           requests.map((request) => (
-            <div key={request._id} className="card hover:shadow-lg transition-all duration-300">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white transition-colors duration-300">
-                      {generateRequestId(request._id)}
-                    </h3>
-                    <span className={`badge ${getStatusColor(request.status)}`}>
-                      {request.status}
-                    </span>
-                    <span className="badge bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700">
-                      {getCategoryName(request.category)}
-                    </span>
-                  </div>
-                  <p className="text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">
-                    {request.description}
-                  </p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
-                    <span>Created: {formatDate(request.createdAt)}</span>
-                    {request.updatedAt !== request.createdAt && (
-                      <span>Updated: {formatDate(request.updatedAt)}</span>
-                    )}
-                    {request.resolvedAt && (
-                      <span>Resolved: {formatDate(request.resolvedAt)}</span>
-                    )}
-                  </div>
-                </div>
-                <Link
-                  to={`/chat/${request._id}`}
-                  className="btn btn-secondary flex items-center space-x-2"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Chat</span>
-                </Link>
-              </div>
-              {request.adminNotes && (
-                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border-l-4 border-blue-500 dark:border-blue-400 transition-colors duration-300">
-                  <p className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-1 transition-colors duration-300">
-                    Admin Notes:
-                  </p>
-                  <p className="text-sm text-blue-800 dark:text-blue-200 transition-colors duration-300 whitespace-pre-wrap">
-                    {request.adminNotes}
-                  </p>
-                </div>
-              )}
-
-              {request.attachmentUrl && (
-                <div className="mt-4">
-                  <a
-                    href={request.attachmentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors duration-300"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    <span>View Attachment</span>
-                  </a>
-                </div>
-              )}
-            </div>
+            <RequestHistoryCard
+              key={request._id}
+              request={request}
+              categoryName={getCategoryName(request.category)}
+              isUpdating={updatingRequestId === request._id}
+            />
           ))
         )}
       </div>
@@ -187,4 +159,3 @@ const RequestHistory = () => {
 };
 
 export default RequestHistory;
-

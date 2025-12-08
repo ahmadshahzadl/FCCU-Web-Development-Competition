@@ -12,7 +12,7 @@ const corsOptions: cors.CorsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
-// Rate limiting middleware
+// General rate limiting middleware (for non-API routes)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
@@ -21,11 +21,41 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 
-// API rate limiter (stricter for API endpoints)
-const apiLimiter = rateLimit({
+// Signin rate limiter (more lenient - at least 5 requests per 15 minutes)
+export const signinLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // limit each IP to 50 requests per windowMs
+  max: 10, // Allow 10 signin attempts per 15 minutes (more than 5 as requested)
+  message: 'Too many signin attempts, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Don't count successful signins
+});
+
+// General API rate limiter (increased limit)
+export const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, // Increased from 50 to 200 requests per 15 minutes
   message: 'Too many API requests, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Requests rate limiter (more lenient for request operations)
+export const requestsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Allow 100 request operations per 15 minutes
+  message: 'Too many request operations, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Strict rate limiter for sensitive operations (create, update, delete)
+export const strictLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 50, // Limit write operations
+  message: 'Too many write operations, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Apply all middleware to the Express app
@@ -40,8 +70,10 @@ export const setupMiddleware = (app: Express): void => {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-  // Rate limiting
+  // Rate limiting - Apply general API limiter (more lenient now)
   app.use('/api/', apiLimiter);
+  
+  // Apply general limiter to all routes
   app.use(limiter);
 
   // Request logging middleware (in development)

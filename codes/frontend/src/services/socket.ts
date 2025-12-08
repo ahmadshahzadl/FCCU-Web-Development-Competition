@@ -5,28 +5,70 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
 
 class SocketService {
   private socket: Socket | null = null;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
 
-  connect(): Socket {
-    if (!this.socket) {
-      this.socket = io(SOCKET_URL, {
-        transports: ['websocket'],
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-      });
-
-      this.socket.on('connect', () => {
-        console.log('Socket connected:', this.socket?.id);
-      });
-
-      this.socket.on('disconnect', () => {
-        console.log('Socket disconnected');
-      });
-
-      this.socket.on('error', (error) => {
-        console.error('Socket error:', error);
-      });
+  connect(token?: string, serverUrl?: string): Socket {
+    const url = serverUrl || SOCKET_URL;
+    
+    // If socket already exists and is connected, return it
+    if (this.socket?.connected) {
+      console.log('Socket already connected');
+      return this.socket;
     }
+
+    // Disconnect existing socket if any
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
+
+    // Create new socket connection with authentication
+    const socketOptions: any = {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: this.maxReconnectAttempts,
+      reconnectionDelay: 1000,
+    };
+
+    // Add authentication token if provided
+    if (token) {
+      socketOptions.auth = {
+        token: token,
+      };
+    }
+
+    this.socket = io(url, socketOptions);
+
+    this.socket.on('connect', () => {
+      console.log('Socket connected:', this.socket?.id);
+      this.reconnectAttempts = 0;
+      // Emit custom event for connection status updates
+      this.socket?.emit('connection-status', { connected: true });
+    });
+
+    this.socket.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason);
+      // Emit custom event for disconnection
+      this.socket?.emit('connection-status', { connected: false });
+      if (reason === 'io server disconnect') {
+        // Server disconnected the socket, try to reconnect
+        this.socket?.connect();
+      }
+    });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      this.reconnectAttempts++;
+      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+        console.error('Max reconnection attempts reached');
+      }
+    });
+
+    this.socket.on('error', (error) => {
+      console.error('Socket error:', error);
+    });
+
     return this.socket;
   }
 
@@ -207,6 +249,32 @@ class SocketService {
   removeAllListeners(): void {
     if (this.socket) {
       this.socket.removeAllListeners();
+    }
+  }
+
+  // Check if socket is connected
+  isConnected(): boolean {
+    return this.socket?.connected ?? false;
+  }
+
+  // Get socket ID
+  getSocketId(): string | undefined {
+    return this.socket?.id;
+  }
+
+  // Listen to connection status changes
+  onConnectionStatusChange(callback: (connected: boolean) => void): void {
+    if (this.socket) {
+      this.socket.on('connect', () => callback(true));
+      this.socket.on('disconnect', () => callback(false));
+    }
+  }
+
+  // Remove connection status listeners
+  offConnectionStatusChange(callback: (connected: boolean) => void): void {
+    if (this.socket) {
+      this.socket.off('connect', () => callback(true));
+      this.socket.off('disconnect', () => callback(false));
     }
   }
 }

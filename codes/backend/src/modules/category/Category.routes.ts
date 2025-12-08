@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { CategoryController } from './Category.controller';
 import { authenticate, authorize } from '../../middleware/auth.middleware';
+import { apiLimiter, strictLimiter } from '../../middleware';
 
 export class CategoryRoutes {
   private router: Router;
@@ -14,15 +15,16 @@ export class CategoryRoutes {
 
   private initializeRoutes(): void {
     // Get all categories (public for authenticated users)
-    this.router.get('/', authenticate, this.controller.getAllCategories);
+    this.router.get('/', authenticate, apiLimiter, this.controller.getAllCategories);
 
     // Get category by ID (public for authenticated users)
-    this.router.get('/:id', authenticate, this.controller.getCategoryById);
+    this.router.get('/:id', authenticate, apiLimiter, this.controller.getCategoryById);
 
     // Create category (admin and manager only)
     this.router.post(
       '/',
       authenticate,
+      strictLimiter,
       authorize('admin', 'manager'),
       this.controller.createCategory
     );
@@ -31,6 +33,7 @@ export class CategoryRoutes {
     this.router.put(
       '/:id',
       authenticate,
+      strictLimiter,
       authorize('admin', 'manager'),
       this.controller.updateCategory
     );
@@ -39,6 +42,7 @@ export class CategoryRoutes {
     this.router.delete(
       '/:id',
       authenticate,
+      strictLimiter,
       authorize('admin', 'manager'),
       this.controller.deleteCategory
     );
@@ -47,6 +51,7 @@ export class CategoryRoutes {
     this.router.put(
       '/:id/deactivate',
       authenticate,
+      strictLimiter,
       authorize('admin', 'manager'),
       this.controller.deactivateCategory
     );
@@ -55,6 +60,7 @@ export class CategoryRoutes {
     this.router.put(
       '/:id/activate',
       authenticate,
+      strictLimiter,
       authorize('admin', 'manager'),
       this.controller.activateCategory
     );

@@ -78,10 +78,11 @@ export class RequestController {
       // Emit socket event for new request
       try {
         const socketService = getSocketService();
+        console.log('[RequestController] Emitting socket event for new request:', newRequest._id);
         socketService.notifyRequestCreated(newRequest);
       } catch (error) {
         // Socket error shouldn't break the request creation
-        console.error('Failed to emit socket event:', error);
+        console.error('[RequestController] Failed to emit socket event:', error);
       }
 
       res.status(201).json({

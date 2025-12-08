@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { UserController } from './User.controller';
 import { authenticate, authorize } from '../../middleware/auth.middleware';
+import { apiLimiter, strictLimiter } from '../../middleware';
 import type { UserRole } from '../auth/types';
 
 export class UserRoutes {
@@ -19,15 +20,16 @@ export class UserRoutes {
 
     // Get current user profile (all authenticated users)
     // IMPORTANT: This must come BEFORE /:id route to avoid "me" being treated as an ID
-    this.router.get('/me', this.controller.getCurrentUser);
+    this.router.get('/me', apiLimiter, this.controller.getCurrentUser);
 
     // Update current user profile (all authenticated users)
     // IMPORTANT: This must come BEFORE /:id route to avoid "me" being treated as an ID
-    this.router.put('/me', this.controller.updateCurrentUser);
+    this.router.put('/me', strictLimiter, this.controller.updateCurrentUser);
 
     // Get all users (admin and manager only)
     this.router.get(
       '/',
+      apiLimiter,
       authorize('admin', 'manager'),
       this.controller.getAllUsers
     );
@@ -35,6 +37,7 @@ export class UserRoutes {
     // Get user by ID (admin and manager only)
     this.router.get(
       '/:id',
+      apiLimiter,
       authorize('admin', 'manager'),
       this.controller.getUserById
     );
@@ -42,6 +45,7 @@ export class UserRoutes {
     // Create user (admin and manager only)
     this.router.post(
       '/',
+      strictLimiter,
       authorize('admin', 'manager'),
       this.controller.createUser
     );
@@ -49,6 +53,7 @@ export class UserRoutes {
     // Update user (admin and manager only)
     this.router.put(
       '/:id',
+      strictLimiter,
       authorize('admin', 'manager'),
       this.controller.updateUser
     );
@@ -56,6 +61,7 @@ export class UserRoutes {
     // Delete user (admin and manager only)
     this.router.delete(
       '/:id',
+      strictLimiter,
       authorize('admin', 'manager'),
       this.controller.deleteUser
     );

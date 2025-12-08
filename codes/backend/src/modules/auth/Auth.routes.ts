@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { AuthController } from './Auth.controller';
+import { signinLimiter } from '../../middleware';
 
 export class AuthRoutes {
   private router: Router;
@@ -12,8 +13,8 @@ export class AuthRoutes {
   }
 
   private initializeRoutes(): void {
-    // Sign in with email and password
-    this.router.post('/signin', this.controller.signIn);
+    // Sign in with email and password (with specific rate limiter)
+    this.router.post('/signin', signinLimiter, this.controller.signIn);
   }
 
   public getRouter(): Router {
