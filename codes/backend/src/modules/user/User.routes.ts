@@ -17,6 +17,14 @@ export class UserRoutes {
     // All routes require authentication
     this.router.use(authenticate);
 
+    // Get current user profile (all authenticated users)
+    // IMPORTANT: This must come BEFORE /:id route to avoid "me" being treated as an ID
+    this.router.get('/me', this.controller.getCurrentUser);
+
+    // Update current user profile (all authenticated users)
+    // IMPORTANT: This must come BEFORE /:id route to avoid "me" being treated as an ID
+    this.router.put('/me', this.controller.updateCurrentUser);
+
     // Get all users (admin and manager only)
     this.router.get(
       '/',

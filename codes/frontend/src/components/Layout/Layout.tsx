@@ -8,11 +8,11 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300 ease-in-out">
       <Navbar />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 p-6 lg:p-8">
+        <main className="flex-1 p-6 lg:p-8 transition-colors duration-300 ease-in-out">
           {children}
         </main>
       </div>

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { RequestService } from './Request.service';
 import { asyncHandler, ValidationError } from '../../middleware/errorHandler';
+import { getSocketService, SocketEvents } from '../../utils/socket';
 
 export class RequestController {
   private requestService: RequestService;
@@ -74,6 +75,15 @@ export class RequestController {
         createdByUsername
       );
 
+      // Emit socket event for new request
+      try {
+        const socketService = getSocketService();
+        socketService.notifyRequestCreated(newRequest);
+      } catch (error) {
+        // Socket error shouldn't break the request creation
+        console.error('Failed to emit socket event:', error);
+      }
+
       res.status(201).json({
         success: true,
         data: newRequest,
@@ -87,6 +97,15 @@ export class RequestController {
       const updateData = req.body;
 
       const request = await this.requestService.updateRequest(id, updateData);
+
+      // Emit socket event for request update
+      try {
+        const socketService = getSocketService();
+        socketService.notifyRequestUpdated(request, req.user?.username);
+      } catch (error) {
+        // Socket error shouldn't break the request update
+        console.error('Failed to emit socket event:', error);
+      }
 
       res.status(200).json({
         success: true,
@@ -104,11 +123,29 @@ export class RequestController {
         throw new ValidationError('Status is required');
       }
 
+      // Get current request to track status change
+      const currentRequest = await this.requestService.getRequestById(id);
+      const oldStatus = currentRequest.status;
+
       const request = await this.requestService.updateRequestStatus(
         id,
         status,
         adminNotes
       );
+
+      // Emit socket event for status update
+      try {
+        const socketService = getSocketService();
+        socketService.notifyRequestStatusUpdated(
+          request,
+          oldStatus,
+          status,
+          req.user?.username
+        );
+      } catch (error) {
+        // Socket error shouldn't break the status update
+        console.error('Failed to emit socket event:', error);
+      }
 
       res.status(200).json({
         success: true,
@@ -126,6 +163,15 @@ export class RequestController {
       }
 
       await this.requestService.deleteRequest(id, req.user.username);
+
+      // Emit socket event for request deletion
+      try {
+        const socketService = getSocketService();
+        socketService.notifyRequestDeleted(id, req.user.username);
+      } catch (error) {
+        // Socket error shouldn't break the deletion
+        console.error('Failed to emit socket event:', error);
+      }
 
       res.status(200).json({
         success: true,

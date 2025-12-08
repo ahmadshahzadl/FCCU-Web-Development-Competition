@@ -1,10 +1,9 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export type RequestCategory = 'maintenance' | 'academic' | 'lost-found' | 'general';
 export type RequestStatus = 'pending' | 'in-progress' | 'resolved';
 
 export interface IRequest extends Document {
-  category: RequestCategory;
+  category: string; // Category slug (references Category model)
   description: string;
   status: RequestStatus;
   studentId?: string;
@@ -24,7 +23,8 @@ const RequestSchema: Schema = new Schema(
     category: {
       type: String,
       required: [true, 'Category is required'],
-      enum: ['maintenance', 'academic', 'lost-found', 'general'],
+      trim: true,
+      lowercase: true,
     },
     description: {
       type: String,

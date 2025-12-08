@@ -68,11 +68,13 @@ const ServiceRequest = () => {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Submit Service Request</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-300">
+        Submit Service Request
+      </h1>
       
       <form onSubmit={handleSubmit} className="card space-y-6">
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">
             Category *
           </label>
           <select
@@ -91,7 +93,7 @@ const ServiceRequest = () => {
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">
             Description *
           </label>
           <textarea
@@ -106,7 +108,7 @@ const ServiceRequest = () => {
         </div>
 
         <div>
-          <label htmlFor="studentName" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="studentName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">
             Your Name (Optional)
           </label>
           <input
@@ -120,16 +122,16 @@ const ServiceRequest = () => {
         </div>
 
         <div>
-          <label htmlFor="attachment" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="attachment" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">
             Attachment (Optional)
           </label>
           <div className="flex items-center space-x-4">
             <label
               htmlFor="attachment"
-              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-300 bg-white dark:bg-gray-900"
             >
-              <Upload className="h-5 w-5 text-gray-600" />
-              <span className="text-sm text-gray-700">
+              <Upload className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <span className="text-sm text-gray-700 dark:text-gray-300">
                 {attachment ? attachment.name : 'Choose file'}
               </span>
             </label>
@@ -144,13 +146,13 @@ const ServiceRequest = () => {
               <button
                 type="button"
                 onClick={() => setAttachment(null)}
-                className="text-sm text-red-600 hover:text-red-700"
+                className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors duration-300"
               >
                 Remove
               </button>
             )}
           </div>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-300">
             Supported formats: Images, PDF, DOC, DOCX (Max 5MB)
           </p>
         </div>

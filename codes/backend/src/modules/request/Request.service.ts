@@ -1,5 +1,6 @@
 import { Request, IRequest } from './Request.model';
 import { NotFoundError, ValidationError } from '../../middleware/errorHandler';
+import { Category } from '../category/Category.model';
 
 export class RequestService {
   // Get all requests with filters and pagination
@@ -49,8 +50,21 @@ export class RequestService {
     data: Partial<IRequest>,
     createdByUsername: string
   ): Promise<IRequest> {
+    // Validate category exists and is active
+    if (data.category) {
+      const category = await Category.findOne({
+        slug: data.category.toLowerCase(),
+        isActive: true,
+      });
+
+      if (!category) {
+        throw new ValidationError('Invalid or inactive category');
+      }
+    }
+
     return await Request.create({
       ...data,
+      category: data.category?.toLowerCase(),
       createdBy: createdByUsername.toLowerCase(), // Audit: Track who created this request
     });
   }
@@ -65,6 +79,20 @@ export class RequestService {
 
     if (!currentRequest) {
       throw new NotFoundError('Request not found');
+    }
+
+    // Validate category if being updated
+    if (updateData.category) {
+      const category = await Category.findOne({
+        slug: updateData.category.toLowerCase(),
+        isActive: true,
+      });
+
+      if (!category) {
+        throw new ValidationError('Invalid or inactive category');
+      }
+
+      updateData.category = updateData.category.toLowerCase();
     }
 
     // Check if request is already resolved and trying to change status

@@ -4,10 +4,8 @@ import AnnouncementRoutesInstance from '../modules/announcement/Announcement.rou
 import AuthRoutesInstance from '../modules/auth/Auth.routes';
 import UserRoutesInstance from '../modules/user/User.routes';
 import SystemConfigRoutesInstance from '../modules/systemConfig/SystemConfig.routes';
-// Import other module routes here as they are created
-// import ChatRoutesInstance from '../modules/chat/Chat.routes';
-// import AnalyticsRoutesInstance from '../modules/analytics/Analytics.routes';
-// import NotificationRoutesInstance from '../modules/notification/Notification.routes';
+import CategoryRoutesInstance from '../modules/category/Category.routes';
+
 
 class ApiRoutes {
   private router: Router;
@@ -26,6 +24,8 @@ class ApiRoutes {
     
     // System Config Routes
     this.router.use('/system-config', SystemConfigRoutesInstance);
+    // Category Routes (protected)
+    this.router.use('/categories', CategoryRoutesInstance);
     
     // API Routes
     this.router.use('/requests', RequestRoutesInstance);

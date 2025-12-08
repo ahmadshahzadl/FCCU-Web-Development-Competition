@@ -3,38 +3,102 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    @apply transition-colors duration-300 ease-in-out;
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300 ease-in-out;
+  }
+
+  /* Ensure smooth transitions for common elements */
+  a, button, input, select, textarea {
+    @apply transition-colors duration-300 ease-in-out;
+  }
+
+  /* Textarea specific styling */
+  textarea {
+    @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100;
   }
 }
 
 @layer components {
+  /* Glassmorphic Effects */
+  .glass {
+    @apply bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-white/20 dark:border-gray-700/30;
+  }
+
+  .glass-strong {
+    @apply bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl border border-white/30 dark:border-gray-700/40;
+  }
+
+  .glass-nav {
+    @apply bg-white/90 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 transition-all duration-300 ease-in-out;
+  }
+
+  .glass-sidebar {
+    @apply bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-r border-gray-200/50 dark:border-gray-800/50 transition-all duration-300 ease-in-out;
+  }
+
+  .glass-button {
+    @apply bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border border-white/30 dark:border-gray-700/40 hover:bg-white/70 dark:hover:bg-gray-800/70 transition-all duration-300;
+  }
+
+  .glass-card {
+    @apply bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 shadow-lg;
+  }
+
+  /* Buttons */
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+    @apply px-4 py-2.5 rounded-lg font-medium transition-all duration-300 ease-in-out;
   }
 
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800;
+    @apply bg-primary-600 dark:bg-primary-500 text-white hover:bg-primary-700 dark:hover:bg-primary-600 active:bg-primary-800 dark:active:bg-primary-700;
   }
 
   .btn-secondary {
-    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 active:bg-gray-400;
+    @apply bg-gray-200/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-800 dark:text-gray-200 hover:bg-gray-300/90 dark:hover:bg-gray-600/90 active:bg-gray-400 dark:active:bg-gray-500 border border-gray-300/50 dark:border-gray-600/50;
   }
 
   .btn-danger {
-    @apply bg-red-600 text-white hover:bg-red-700 active:bg-red-800;
+    @apply bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 dark:hover:bg-red-600 active:bg-red-800 dark:active:bg-red-700 shadow-lg shadow-red-500/30 dark:shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/40;
   }
 
+  /* Inputs */
   .input {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20 focus:border-primary-500 dark:focus:border-primary-400 transition-all duration-300 ease-in-out;
   }
 
+  /* Cards */
   .card {
-    @apply bg-white rounded-lg shadow-md p-6;
+    @apply bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-all duration-300 ease-in-out;
   }
 
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium;
+  }
+}
+
+@layer utilities {
+  /* Animation utilities */
+  @keyframes slide-in-from-top {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-in {
+    animation: slide-in-from-top 0.3s ease-out;
+  }
+
+  .slide-in-from-top-2 {
+    animation: slide-in-from-top 0.3s ease-out;
   }
 }
 
