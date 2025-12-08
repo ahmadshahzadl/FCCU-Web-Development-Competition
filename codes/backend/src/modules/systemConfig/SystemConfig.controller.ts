@@ -20,6 +20,22 @@ export class SystemConfigController {
     }
   );
 
+  getPublicConfig = asyncHandler(
+    async (req: Request, res: Response, _next: NextFunction) => {
+      const config = await this.systemConfigService.getConfig();
+
+      // Return only public fields (exclude email domains)
+      res.status(200).json({
+        success: true,
+        data: {
+          projectName: config.projectName,
+          logoUrl: config.logoUrl,
+          // Don't expose allowedEmailDomains to public
+        },
+      });
+    }
+  );
+
   updateProjectName = asyncHandler(
     async (req: Request, res: Response, _next: NextFunction) => {
       const { projectName } = req.body;

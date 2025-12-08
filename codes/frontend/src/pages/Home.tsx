@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom';
 import { FileText, MapPin, Bell, MessageSquare, BarChart3, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const Home = () => {
   const { user } = useAuth();
   const isStudent = user?.role === 'student';
+  
+  usePageTitle('Home');
 
   return (
     <div className="max-w-7xl mx-auto">

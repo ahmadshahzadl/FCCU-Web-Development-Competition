@@ -194,6 +194,38 @@ export interface UpdateUserRequest {
  * Update profile request payload (for Student/Team/Manager own profile)
  * Email and username can only be updated by admin role
  */
+// System Configuration Types
+export interface SystemConfig {
+  _id: string;
+  projectName: string;
+  logoUrl?: string;
+  allowedEmailDomains: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateProjectNameRequest {
+  projectName: string;
+}
+
+export interface UpdateLogoRequest {
+  logo: string;
+}
+
+export interface AddEmailDomainRequest {
+  domain: string;
+}
+
+export interface RemoveEmailDomainRequest {
+  domain: string;
+}
+
+// Public System Configuration (read-only, no auth required)
+export interface PublicSystemConfig {
+  projectName: string;
+  logoUrl?: string;
+}
+
 export interface UpdateProfileRequest {
   name?: string;
   password?: string;

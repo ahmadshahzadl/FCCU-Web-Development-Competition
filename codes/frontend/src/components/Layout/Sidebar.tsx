@@ -11,6 +11,7 @@ import {
   UserCircle,
   ClipboardList,
   FolderTree,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import type { UserRole } from '@/types';
@@ -33,13 +34,14 @@ const Sidebar = () => {
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'team'] },
     { path: '/map', label: 'Campus Map', icon: MapPin },
     { path: '/announcements', label: 'Announcements', icon: Bell },
-    { path: '/history', label: 'Request History', icon: History },
+    { path: '/history', label: 'Request History', icon: History, roles: ['student', 'team'] },
     { path: '/analytics', label: 'Analytics', icon: BarChart3, roles: ['admin', 'manager'] },
     { path: '/profile', label: 'My Profile', icon: UserCircle },
     { path: '/users', label: 'User Management', icon: Users, roles: ['admin', 'manager'] },
     { path: '/requests', label: 'Request Management', icon: ClipboardList, roles: ['admin', 'manager'] },
     { path: '/team-requests', label: 'Requests', icon: ClipboardList, roles: ['team'] },
     { path: '/categories', label: 'Category Management', icon: FolderTree, roles: ['admin', 'manager'] },
+    { path: '/system-config', label: 'System Configuration', icon: Settings, roles: ['admin'] },
   ];
 
   // Filter menu items based on user role

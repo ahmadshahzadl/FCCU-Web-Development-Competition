@@ -8,10 +8,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSystemConfig } from '@/contexts/SystemConfigContext';
 import { toast } from 'react-hot-toast';
 import { LogIn, Mail, Lock, Home, Eye, EyeOff, X, Info, AlertCircle, RefreshCw } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getDefaultRedirectPath } from '@/utils/auth.helpers';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -23,9 +25,12 @@ const Login = () => {
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
   const [canRetry, setCanRetry] = useState(true);
   const { signIn } = useAuth();
+  const { config: systemConfig, loading: configLoading } = useSystemConfig();
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
+  
+  usePageTitle('Sign In');
 
   // Countdown timer for rate limiting
   useEffect(() => {
@@ -150,17 +155,43 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8">
         {/* Logo and Title */}
         <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-2xl bg-primary-600 dark:bg-primary-500 text-white shadow-lg">
-              <Home className="h-8 w-8" />
+          {configLoading ? (
+            <div className="flex flex-col items-center mb-4">
+              <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse mb-4" />
+              <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
             </div>
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
-            Campus Helper
-          </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
-            Sign in to your account to continue
-          </p>
+          ) : (
+            <>
+              <div className="flex justify-center mb-4">
+                {systemConfig?.logoUrl ? (
+                  <img
+                    src={systemConfig.logoUrl}
+                    alt={`${systemConfig.projectName} Logo`}
+                    className="h-20 w-auto object-contain"
+                    onError={(e) => {
+                      // Hide image if it fails to load and show fallback
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div
+                  className={`p-3 rounded-2xl bg-primary-600 dark:bg-primary-500 text-white shadow-lg transition-all duration-300 ${
+                    systemConfig?.logoUrl ? 'hidden' : ''
+                  }`}
+                >
+                  <Home className="h-8 w-8" />
+                </div>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
+                {systemConfig?.projectName || 'Campus Helper'}
+              </h2>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
+                Sign in to your account to continue
+              </p>
+            </>
+          )}
         </div>
 
         {/* Login Form */}

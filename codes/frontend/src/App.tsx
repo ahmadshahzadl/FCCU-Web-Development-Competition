@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { SystemConfigProvider } from './contexts/SystemConfigContext';
 import Layout from './components/Layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -19,6 +20,7 @@ import RequestManagement from './pages/RequestManagement';
 import CategoryManagement from './pages/CategoryManagement';
 import TeamRequestsList from './pages/TeamRequestsList';
 import Profile from './pages/Profile';
+import SystemConfig from './pages/SystemConfig';
 import Chatbot from './components/Chatbot/Chatbot';
 import { useStudentSocket } from './hooks/useStudentSocket';
 
@@ -171,7 +173,7 @@ const AppRoutes = () => {
       <Route
         path="/history"
         element={
-          <ProtectedRoute allowedRoles={['student', 'admin', 'team', 'manager']}>
+          <ProtectedRoute allowedRoles={['student', 'team']}>
             <Layout>
               <RequestHistory />
             </Layout>
@@ -264,6 +266,16 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/system-config"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout>
+              <SystemConfig />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
       {/* Catch all - redirect to home or login */}
       <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />} />
@@ -275,11 +287,13 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
-          <AppRoutes />
-          <Chatbot />
-          <ToasterWithTheme />
-    </Router>
+        <SystemConfigProvider>
+          <Router>
+            <AppRoutes />
+            <Chatbot />
+            <ToasterWithTheme />
+          </Router>
+        </SystemConfigProvider>
       </AuthProvider>
     </ThemeProvider>
   );

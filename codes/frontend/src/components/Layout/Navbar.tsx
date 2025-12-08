@@ -3,12 +3,14 @@ import { Home, Menu, Sun, Moon, X, LogOut, User } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSystemConfig } from '@/contexts/SystemConfigContext';
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { user, signOut } = useAuth();
+  const { config: systemConfig, loading: configLoading } = useSystemConfig();
   const userMenuRef = useRef<HTMLDivElement>(null);
 
 
@@ -39,17 +41,38 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-            <Link
-              to="/"
+          <Link
+            to="/"
             className="flex items-center space-x-3 group transition-transform duration-200 hover:scale-[1.02]"
           >
-            <div className="p-2 rounded-lg bg-primary-600 dark:bg-primary-500 text-white transition-all duration-300 shadow-sm shadow-primary-500/20 dark:shadow-primary-500/30">
-              <Home className="h-5 w-5" />
-            </div>
-            <span className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight transition-colors duration-300">
-              Campus Helper
-            </span>
-            </Link>
+            {configLoading ? (
+              <>
+                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+                <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              </>
+            ) : (
+              <>
+                {systemConfig?.logoUrl ? (
+                  <img
+                    src={systemConfig.logoUrl}
+                    alt={`${systemConfig.projectName} Logo`}
+                    className="h-10 w-auto object-contain"
+                    onError={(e) => {
+                      // Hide image if it fails to load
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="p-2 rounded-lg bg-primary-600 dark:bg-primary-500 text-white transition-all duration-300 shadow-sm shadow-primary-500/20 dark:shadow-primary-500/30">
+                    <Home className="h-5 w-5" />
+                  </div>
+                )}
+                <span className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight transition-colors duration-300">
+                  {systemConfig?.projectName || 'Campus Helper'}
+                </span>
+              </>
+            )}
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">

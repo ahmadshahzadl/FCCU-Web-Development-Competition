@@ -4,16 +4,17 @@
  * Compact modal for creating or editing users
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { X, Eye, EyeOff } from 'lucide-react';
 import { getRoleDisplayName } from '@/utils/auth.helpers';
 import type { User, UserRole, CreateUserRequest, UpdateUserRequest } from '@/types';
+import EmailInputWithDomain from '@/components/Form/EmailInputWithDomain';
 
 interface UserCreateEditModalProps {
   isOpen: boolean;
   editingUser: User | null;
   formData: CreateUserRequest;
-  onFormDataChange: (data: CreateUserRequest) => void;
+  onFormDataChange: (data: CreateUserRequest | ((prev: CreateUserRequest) => CreateUserRequest)) => void;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
   isManager: boolean;
@@ -31,6 +32,12 @@ const UserCreateEditModal = ({
   isAdmin,
 }: UserCreateEditModalProps) => {
   const [showPassword, setShowPassword] = useState(false);
+
+  // Helper function to update form data fields
+  // Use functional update pattern to avoid stale closure issues
+  const updateField = useCallback((field: keyof CreateUserRequest, value: any) => {
+    onFormDataChange((prev: CreateUserRequest) => ({ ...prev, [field]: value }));
+  }, [onFormDataChange]);
 
   if (!isOpen) return null;
 
@@ -58,13 +65,12 @@ const UserCreateEditModal = ({
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
               Email <span className="text-red-500">*</span>
             </label>
-            <input
-              type="email"
-              required
+            <EmailInputWithDomain
               value={formData.email}
-              onChange={(e) => onFormDataChange({ ...formData, email: e.target.value })}
-              className="input w-full h-10 text-sm"
-              placeholder="user@example.com"
+              onChange={(email) => updateField('email', email)}
+              required
+              className="h-10 text-sm"
+              placeholder="username"
             />
           </div>
 
@@ -76,8 +82,8 @@ const UserCreateEditModal = ({
             <input
               type="text"
               required
-              value={formData.username}
-              onChange={(e) => onFormDataChange({ ...formData, username: e.target.value })}
+              value={formData.username || ''}
+              onChange={(e) => updateField('username', e.target.value)}
               className="input w-full h-10 text-sm"
               placeholder={formData.role === 'student' ? 'Roll number' : 'username'}
             />
@@ -94,8 +100,8 @@ const UserCreateEditModal = ({
                   type={showPassword ? 'text' : 'password'}
                   required
                   minLength={6}
-                  value={formData.password}
-                  onChange={(e) => onFormDataChange({ ...formData, password: e.target.value })}
+                  value={formData.password || ''}
+                  onChange={(e) => updateField('password', e.target.value)}
                   className="input w-full h-10 text-sm pr-10"
                   placeholder="Minimum 6 characters"
                 />
@@ -123,7 +129,7 @@ const UserCreateEditModal = ({
             <input
               type="text"
               value={formData.name || ''}
-              onChange={(e) => onFormDataChange({ ...formData, name: e.target.value })}
+              onChange={(e) => updateField('name', e.target.value)}
               className="input w-full h-10 text-sm"
               placeholder="John Doe"
             />
@@ -137,7 +143,7 @@ const UserCreateEditModal = ({
             <select
               required
               value={formData.role}
-              onChange={(e) => onFormDataChange({ ...formData, role: e.target.value as UserRole })}
+              onChange={(e) => updateField('role', e.target.value as UserRole)}
               className="input w-full h-10 text-sm"
               disabled={isManager && !editingUser}
             >

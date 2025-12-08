@@ -10,7 +10,8 @@ import { apiService } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import type { CreateUserRequest, UserRole } from '@/types';
-import { UserPlus, X, Mail, User as UserIcon, Lock, UserCog } from 'lucide-react';
+import { UserPlus, X, User as UserIcon, Lock, UserCog } from 'lucide-react';
+import EmailInputWithDomain from '@/components/Form/EmailInputWithDomain';
 
 interface ManagerCreateUserProps {
   onSuccess?: () => void;
@@ -155,20 +156,12 @@ const ManagerCreateUser = ({ onSuccess, onCancel }: ManagerCreateUserProps) => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Email *
                   </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                    </div>
-                    <input
-                      type="email"
-                      name="email"
-                      required
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="input pl-10 w-full"
-                      placeholder="user@example.com"
-                    />
-                  </div>
+                  <EmailInputWithDomain
+                    value={formData.email}
+                    onChange={(email) => setFormData({ ...formData, email })}
+                    required
+                    placeholder="username"
+                  />
                 </div>
 
                 <div>

@@ -13,11 +13,15 @@ export class SystemConfigRoutes {
   }
 
   private initializeRoutes(): void {
+    // Public route - Get system configuration (read-only, no auth required)
+    // This allows all users to see project name and logo
+    this.router.get('/public', this.controller.getPublicConfig);
+
     // All update operations require admin authentication
     this.router.use(authenticate);
     this.router.use(authorize('admin'));
 
-    // Get system configuration
+    // Get system configuration (admin only - includes email domains)
     this.router.get('/', this.controller.getConfig);
 
     

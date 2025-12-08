@@ -28,6 +28,12 @@ import type {
   UpdateUserRequest,
   UpdateProfileRequest,
   UserStats,
+  SystemConfig,
+  UpdateProjectNameRequest,
+  UpdateLogoRequest,
+  AddEmailDomainRequest,
+  RemoveEmailDomainRequest,
+  PublicSystemConfig,
 } from '@/types';
 
 /**
@@ -385,6 +391,52 @@ class ApiService {
   async updateProfile(data: UpdateProfileRequest): Promise<User> {
     const response = await apiClient.put<any>('/users/me', data);
     return this.transformUser(response.data);
+  }
+
+  // System Configuration Methods (Admin Only)
+  async getSystemConfig(): Promise<SystemConfig> {
+    const response = await apiClient.get<{ success: true; data: SystemConfig }>('/system-config');
+    return response.data;
+  }
+
+  async updateProjectName(data: UpdateProjectNameRequest): Promise<SystemConfig> {
+    const response = await apiClient.put<{ success: true; data: SystemConfig; message: string }>(
+      '/system-config/name',
+      data
+    );
+    return response.data;
+  }
+
+  async updateLogo(data: UpdateLogoRequest): Promise<SystemConfig> {
+    const response = await apiClient.put<{ success: true; data: SystemConfig; message: string }>(
+      '/system-config/logo',
+      data
+    );
+    return response.data;
+  }
+
+  async addEmailDomain(data: AddEmailDomainRequest): Promise<SystemConfig> {
+    const response = await apiClient.post<{ success: true; data: SystemConfig; message: string }>(
+      '/system-config/email-domains',
+      data
+    );
+    return response.data;
+  }
+
+  async removeEmailDomain(data: RemoveEmailDomainRequest): Promise<SystemConfig> {
+    const response = await apiClient.delete<{ success: true; data: SystemConfig; message: string }>(
+      '/system-config/email-domains',
+      { data }
+    );
+    return response.data;
+  }
+
+  // Public System Configuration (No authentication required)
+  async getPublicSystemConfig(): Promise<PublicSystemConfig> {
+    const response = await apiClient.get<{ success: true; data: PublicSystemConfig }>(
+      '/system-config/public'
+    );
+    return response.data;
   }
 }
 

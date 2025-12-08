@@ -9,6 +9,7 @@ import { Save } from 'lucide-react';
 import { Mail, Hash, Lock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import FormField from './FormField';
 import FormFieldWithIcon from './FormFieldWithIcon';
+import EmailInputWithDomain from '@/components/Form/EmailInputWithDomain';
 import type { User, UpdateProfileRequest, UserRole } from '@/types';
 import { getRoleDisplayName, getRoleBadgeColor } from '@/utils/auth.helpers';
 import { Shield, UserCog, Briefcase, GraduationCap, User as UserIcon } from 'lucide-react';
@@ -67,16 +68,15 @@ const ProfileForm = ({
 
         {/* Email Field */}
         {canEditEmail ? (
-          <FormFieldWithIcon
-            label="Email Address"
-            htmlFor="email"
-            icon={Mail}
-            value={formData.email || user.email}
-            onChange={(email) => onFormDataChange({ ...formData, email })}
-            type="email"
-            placeholder="user@example.com"
-            required
-          />
+          <FormField label="Email Address" htmlFor="email">
+            <EmailInputWithDomain
+              value={formData.email || user.email}
+              onChange={(email) => onFormDataChange({ ...formData, email })}
+              required
+              className="h-11 text-sm"
+              placeholder="username"
+            />
+          </FormField>
         ) : (
           <FormFieldWithIcon
             label="Email Address"

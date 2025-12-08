@@ -257,7 +257,13 @@ const UserManagement = () => {
         isOpen={showCreateModal}
         editingUser={editingUser}
         formData={formData}
-        onFormDataChange={setFormData}
+        onFormDataChange={(dataOrUpdater) => {
+          if (typeof dataOrUpdater === 'function') {
+            setFormData(dataOrUpdater);
+          } else {
+            setFormData((prev) => ({ ...prev, ...dataOrUpdater }));
+          }
+        }}
         onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
         onClose={() => {
           setShowCreateModal(false);
