@@ -83,7 +83,7 @@ const AppRoutes = () => {
       <Route
         path="/request"
         element={
-          <ProtectedRoute allowedRoles={['student', 'admin', 'team', 'manager']}>
+          <ProtectedRoute allowedRoles={['student']}>
             <Layout>
               <ServiceRequest />
             </Layout>
@@ -123,7 +123,7 @@ const AppRoutes = () => {
       <Route
         path="/chat/:requestId"
         element={
-          <ProtectedRoute allowedRoles={['student', 'admin', 'team', 'manager']}>
+          <ProtectedRoute allowedRoles={['student']}>
             <Layout>
               <Chat />
             </Layout>

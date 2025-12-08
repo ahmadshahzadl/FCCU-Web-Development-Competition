@@ -22,11 +22,12 @@ interface MenuItem {
 
 const Sidebar = () => {
   const location = useLocation();
-  const { hasRole } = useAuth();
+  const { hasRole, user } = useAuth();
+  const isStudent = user?.role === 'student';
 
   const allMenuItems: MenuItem[] = [
     { path: '/', label: 'Home', icon: LayoutDashboard },
-    { path: '/request', label: 'Submit Request', icon: FileText },
+    { path: '/request', label: 'Submit Request', icon: FileText, roles: ['student'] },
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'team'] },
     { path: '/map', label: 'Campus Map', icon: MapPin },
     { path: '/announcements', label: 'Announcements', icon: Bell },
@@ -72,16 +73,18 @@ const Sidebar = () => {
           })}
         </div>
         
-        {/* Bottom Section */}
-        <div className="mt-6 pt-6 border-t border-gray-200/50 dark:border-gray-800/50 transition-colors duration-300">
-          <Link
-            to="/chat"
-            className="flex items-center space-x-3 px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/60 dark:hover:bg-gray-800/60 transition-all duration-300"
-          >
-            <MessageSquare className="h-5 w-5 text-gray-500 dark:text-gray-400 transition-colors duration-300" />
-            <span className="transition-colors duration-300">Chat Support</span>
-          </Link>
-        </div>
+        {/* Bottom Section - Chat Support (Students Only) */}
+        {isStudent && (
+          <div className="mt-6 pt-6 border-t border-gray-200/50 dark:border-gray-800/50 transition-colors duration-300">
+            <Link
+              to="/chat"
+              className="flex items-center space-x-3 px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/60 dark:hover:bg-gray-800/60 transition-all duration-300"
+            >
+              <MessageSquare className="h-5 w-5 text-gray-500 dark:text-gray-400 transition-colors duration-300" />
+              <span className="transition-colors duration-300">Chat Support</span>
+            </Link>
+          </div>
+        )}
       </nav>
     </aside>
   );
