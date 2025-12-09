@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom';
-import { MessageSquare, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import type { ServiceRequest } from '@/types';
 import { getStatusColor, formatDate, generateRequestId } from '@/utils/helpers';
 
@@ -44,13 +43,6 @@ const RequestHistoryCard = ({ request, categoryName, isUpdating }: RequestHistor
             )}
           </div>
         </div>
-        <Link
-          to={`/chat/${request._id}`}
-          className="btn btn-secondary flex items-center space-x-2 transition-colors duration-300"
-        >
-          <MessageSquare className="h-4 w-4" />
-          <span>Chat</span>
-        </Link>
       </div>
 
       {request.adminNotes && (

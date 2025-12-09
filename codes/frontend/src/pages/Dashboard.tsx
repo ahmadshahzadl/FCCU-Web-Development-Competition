@@ -25,8 +25,14 @@ const Dashboard = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user && (user.role === 'admin' || user.role === 'manager')) {
-      loadAnalytics();
+    if (user && (user.role === 'admin' || user.role === 'manager' || user.role === 'team')) {
+      // For team role, we'll show limited stats
+      if (user.role === 'team') {
+        // Team can see basic public stats
+        loadAnalytics();
+      } else {
+        loadAnalytics();
+      }
     }
   }, [user]);
 
@@ -51,7 +57,7 @@ const Dashboard = () => {
       title: 'User Management',
       description: 'Manage users and roles',
       icon: Users,
-      path: '/user-management',
+      path: '/users',
       color: 'bg-blue-500',
       bgGradient: 'from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20',
       borderColor: 'border-blue-200 dark:border-blue-800/50',
@@ -62,7 +68,7 @@ const Dashboard = () => {
       title: 'Request Management',
       description: 'View and manage requests',
       icon: FileText,
-      path: '/request-management',
+      path: '/requests',
       color: 'bg-green-500',
       bgGradient: 'from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20',
       borderColor: 'border-green-200 dark:border-green-800/50',
@@ -70,10 +76,21 @@ const Dashboard = () => {
       availableFor: ['admin', 'manager'] as ('admin' | 'manager')[],
     },
     {
+      title: 'Team Requests',
+      description: 'View and manage team requests',
+      icon: FileText,
+      path: '/team-requests',
+      color: 'bg-green-500',
+      bgGradient: 'from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20',
+      borderColor: 'border-green-200 dark:border-green-800/50',
+      textColor: 'text-green-600 dark:text-green-400',
+      availableFor: ['team'] as ('team')[],
+    },
+    {
       title: 'Category Management',
       description: 'Manage request categories',
       icon: Filter,
-      path: '/category-management',
+      path: '/categories',
       color: 'bg-purple-500',
       bgGradient: 'from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20',
       borderColor: 'border-purple-200 dark:border-purple-800/50',
@@ -126,7 +143,11 @@ const Dashboard = () => {
     );
   }
 
-  if (!summary || !summary.statistics || !summary.statistics.status) {
+  // For team role, show limited view even if no summary
+  const isTeamRole = user?.role === 'team';
+  const hasSummary = summary && summary.statistics && summary.statistics.status;
+
+  if (!hasSummary && !isTeamRole) {
     return (
       <div className="w-full space-y-3 sm:space-y-4 md:space-y-6 px-3 sm:px-4 md:px-0 transition-colors duration-300">
         <div className="card">
@@ -140,10 +161,9 @@ const Dashboard = () => {
     );
   }
 
-  const resolutionRate =
-    summary.statistics.status.total > 0
-      ? ((summary.statistics.status.resolved / summary.statistics.status.total) * 100).toFixed(1)
-      : '0';
+  const resolutionRate = hasSummary && summary.statistics.status.total > 0
+    ? ((summary.statistics.status.resolved / summary.statistics.status.total) * 100).toFixed(1)
+    : '0';
 
   return (
     <div className="w-full space-y-3 sm:space-y-4 md:space-y-6 px-3 sm:px-4 md:px-0 transition-colors duration-300">
@@ -199,29 +219,76 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Statistics Cards */}
-      <StatisticsCards statistics={summary.statistics} />
+      {/* Statistics Cards - Only show for admin/manager or if team has summary */}
+      {hasSummary && (user?.role === 'admin' || user?.role === 'manager') && (
+        <StatisticsCards statistics={summary.statistics} />
+      )}
 
-      {/* Resolution Rate */}
-      <div className="card p-3 sm:p-4 md:p-6 transition-colors duration-300">
-        <div className="flex items-center justify-between mb-2 sm:mb-3">
-          <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300">
-            Resolution Rate
-          </span>
-          <span className="text-base sm:text-lg md:text-xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
-            {resolutionRate}%
-          </span>
+      {/* Public Stats for Team - Show basic stats */}
+      {isTeamRole && hasSummary && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 transition-colors duration-300">
+          <div className="card p-4 transition-colors duration-300">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 transition-colors duration-300">
+              Total Requests
+            </div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
+              {summary.statistics.status.total}
+            </div>
+          </div>
+          <div className="card p-4 transition-colors duration-300">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 transition-colors duration-300">
+              Pending
+            </div>
+            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 transition-colors duration-300">
+              {summary.statistics.status.pending}
+            </div>
+          </div>
+          <div className="card p-4 transition-colors duration-300">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 transition-colors duration-300">
+              In Progress
+            </div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 transition-colors duration-300">
+              {summary.statistics.status.inProgress}
+            </div>
+          </div>
+          <div className="card p-4 transition-colors duration-300">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 transition-colors duration-300">
+              Resolved
+            </div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400 transition-colors duration-300">
+              {summary.statistics.status.resolved}
+            </div>
+          </div>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 sm:h-2.5 transition-colors duration-300">
-          <div
-            className="bg-green-600 dark:bg-green-500 h-2 sm:h-2.5 rounded-full transition-all duration-300"
-            style={{ width: `${resolutionRate}%` }}
-          />
-        </div>
-      </div>
+      )}
 
-      {/* Charts Grid */}
-      {summary.charts && (
+      {/* Statistics Cards for Admin/Manager */}
+      {hasSummary && (user?.role === 'admin' || user?.role === 'manager') && (
+        <StatisticsCards statistics={summary.statistics} />
+      )}
+
+      {/* Resolution Rate - Show for all roles if summary exists */}
+      {hasSummary && (
+        <div className="card p-3 sm:p-4 md:p-6 transition-colors duration-300">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300">
+              Resolution Rate
+            </span>
+            <span className="text-base sm:text-lg md:text-xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
+              {resolutionRate}%
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 sm:h-2.5 transition-colors duration-300">
+            <div
+              className="bg-green-600 dark:bg-green-500 h-2 sm:h-2.5 rounded-full transition-all duration-300"
+              style={{ width: `${resolutionRate}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Charts Grid - Only show for admin/manager */}
+      {hasSummary && summary.charts && (user?.role === 'admin' || user?.role === 'manager') && (
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 transition-colors duration-300">
             {/* Category Chart */}

@@ -20,6 +20,7 @@ import CategoryManagement from './pages/CategoryManagement';
 import TeamRequestsList from './pages/TeamRequestsList';
 import Profile from './pages/Profile';
 import SystemConfig from './pages/SystemConfig';
+import CampusMapManagement from './pages/CampusMapManagement';
 import SystemPromptManager from './components/SystemPrompt/SystemPromptManager';
 import Chatbot from './components/Chatbot/Chatbot';
 import { useStudentSocket } from './hooks/useStudentSocket';
@@ -182,7 +183,7 @@ const AppRoutes = () => {
       <Route
         path="/history"
         element={
-          <ProtectedRoute allowedRoles={['student', 'team']}>
+          <ProtectedRoute allowedRoles={['student']}>
             <Layout>
               <RequestHistory />
             </Layout>
@@ -280,6 +281,16 @@ const AppRoutes = () => {
           <ProtectedRoute allowedRoles={['admin']}>
             <Layout>
               <SystemPromptManager />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campus-map-management"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout>
+              <CampusMapManagement />
             </Layout>
           </ProtectedRoute>
         }

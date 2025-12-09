@@ -44,6 +44,13 @@ import type {
   SystemPromptResponse,
   UpdateSystemPromptRequest,
   UpdateSystemPromptResponse,
+  CampusMapMarker,
+  CreateMarkerRequest,
+  UpdateMarkerRequest,
+  MarkersResponse,
+  MarkerResponse,
+  MarkerStatistics,
+  StatisticsResponse,
 } from '@/types';
 
 /**
@@ -608,8 +615,130 @@ class ApiService {
     };
     // API client returns ApiSuccessResponse<T>, so we pass the inner data type
     const response = await apiClient.put<{ systemPrompt: string; updatedAt: string }>('/ai/system-prompt', requestData);
-    // Response is already ApiSuccessResponse<{ systemPrompt: string, updatedAt: string }> which matches UpdateSystemPromptResponse
-    return response;
+    // Ensure message is always a string to match UpdateSystemPromptResponse
+    return {
+      ...response,
+      message: response.message || 'System prompt updated successfully',
+    };
+  }
+
+  // ==================== Campus Map ====================
+
+  /**
+   * Get all active markers (all authenticated users)
+   */
+  async getAllMarkers(category?: string): Promise<MarkersResponse> {
+    // Backend returns { success: true, data: CampusMapMarker[], count: number }
+    // API client returns ApiSuccessResponse<T> which extracts response.data from axios
+    // So we get { success: true, data: { success: true, data: [...], count: number } }
+    // Actually, the API client returns response.data which is the axios response.data
+    // So if backend returns { success: true, data: [...], count: 1 }, 
+    // axios response.data is { success: true, data: [...], count: 1 }
+    // and API client returns that as ApiSuccessResponse
+    const response = await apiClient.get<any>(
+      '/campus-map',
+      category ? { params: { category } } : undefined
+    );
+    // Handle both standard ApiSuccessResponse and backend response with count
+    const backendData = response.data;
+    const data = Array.isArray(backendData?.data) ? backendData.data : (Array.isArray(backendData) ? backendData : []);
+    const count = backendData?.count ?? data.length;
+    return {
+      success: true,
+      data,
+      count,
+    };
+  }
+
+  /**
+   * Get markers by category (all authenticated users)
+   */
+  async getMarkersByCategory(category: string): Promise<MarkersResponse> {
+    const response = await apiClient.get<any>(`/campus-map/category/${category}`);
+    const backendData = response.data;
+    const data = Array.isArray(backendData?.data) ? backendData.data : (Array.isArray(backendData) ? backendData : []);
+    const count = backendData?.count ?? data.length;
+    return {
+      success: true,
+      data,
+      count,
+    };
+  }
+
+  /**
+   * Get marker by ID (all authenticated users)
+   */
+  async getMarkerById(id: string): Promise<MarkerResponse> {
+    const response = await apiClient.get<CampusMapMarker>(`/campus-map/${id}`);
+    return {
+      success: true,
+      data: response.data,
+    };
+  }
+
+  /**
+   * Get all markers including inactive (admin only)
+   */
+  async getAllMarkersAdmin(category?: string): Promise<MarkersResponse> {
+    const response = await apiClient.get<any>(
+      '/campus-map/admin/all',
+      category ? { params: { category } } : undefined
+    );
+    const backendData = response.data;
+    const data = Array.isArray(backendData?.data) ? backendData.data : (Array.isArray(backendData) ? backendData : []);
+    const count = backendData?.count ?? data.length;
+    return {
+      success: true,
+      data,
+      count,
+    };
+  }
+
+  /**
+   * Create marker (admin only)
+   */
+  async createMarker(data: CreateMarkerRequest): Promise<MarkerResponse> {
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.post<CampusMapMarker>('/campus-map', data);
+    return {
+      success: true,
+      data: response.data,
+    };
+  }
+
+  /**
+   * Update marker (admin only)
+   */
+  async updateMarker(id: string, data: UpdateMarkerRequest): Promise<MarkerResponse> {
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.put<CampusMapMarker>(`/campus-map/${id}`, data);
+    return {
+      success: true,
+      data: response.data,
+    };
+  }
+
+  /**
+   * Delete marker (admin only)
+   */
+  async deleteMarker(id: string): Promise<{ success: true; message: string }> {
+    await apiClient.delete<void>(`/campus-map/${id}`);
+    return {
+      success: true,
+      message: 'Marker deleted successfully',
+    };
+  }
+
+  /**
+   * Get statistics (admin only)
+   */
+  async getMarkerStatistics(): Promise<StatisticsResponse> {
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<MarkerStatistics>('/campus-map/admin/statistics');
+    return {
+      success: true,
+      data: response.data,
+    };
   }
 }
 

@@ -431,3 +431,70 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
+// Campus Map Types
+export interface CampusMapMarker {
+  _id: string;
+  name: string;
+  category: string;
+  description?: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+  contactInfo?: string;
+  openingHours?: string;
+  icon?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateMarkerRequest {
+  name: string;
+  category: string;
+  description?: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+  contactInfo?: string;
+  openingHours?: string;
+  icon?: string;
+  isActive?: boolean;
+}
+
+export interface UpdateMarkerRequest {
+  name?: string;
+  category?: string;
+  description?: string;
+  latitude?: number;
+  longitude?: number;
+  address?: string;
+  contactInfo?: string;
+  openingHours?: string;
+  icon?: string;
+  isActive?: boolean;
+}
+
+export interface MarkersResponse {
+  success: true;
+  data: CampusMapMarker[];
+  count: number;
+}
+
+export interface MarkerResponse {
+  success: true;
+  data: CampusMapMarker;
+}
+
+export interface MarkerStatistics {
+  total: number;
+  active: number;
+  inactive: number;
+  byCategory: Record<string, number>;
+  uniqueCategories: string[];
+}
+
+export interface StatisticsResponse {
+  success: true;
+  data: MarkerStatistics;
+}
+
