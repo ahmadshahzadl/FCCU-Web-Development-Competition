@@ -34,6 +34,23 @@ import type {
   AddEmailDomainRequest,
   RemoveEmailDomainRequest,
   PublicSystemConfig,
+  RequestStatistics,
+  CategoryChartData,
+  StatusChartData,
+  DailyChartData,
+  AnalyticsSummary,
+  AIChatRequest,
+  AIChatResponse,
+  SystemPromptResponse,
+  UpdateSystemPromptRequest,
+  UpdateSystemPromptResponse,
+  CampusMapMarker,
+  CreateMarkerRequest,
+  UpdateMarkerRequest,
+  MarkersResponse,
+  MarkerResponse,
+  MarkerStatistics,
+  StatisticsResponse,
 } from '@/types';
 
 /**
@@ -51,7 +68,16 @@ class ApiService {
     const response = await apiClient.get<Category[]>('/categories', {
       params: includeInactive ? { includeInactive: 'true' } : {},
     });
-    return response.data;
+    // Handle both direct array and wrapped response
+    const data = response.data;
+    if (Array.isArray(data)) {
+      return data;
+    }
+    // Check if it's a wrapped response with nested data
+    if (data && typeof data === 'object' && 'data' in data && Array.isArray((data as any).data)) {
+      return (data as any).data;
+    }
+    return [];
   }
 
   /**
@@ -201,54 +227,61 @@ class ApiService {
 
   // Get user's announcements
   async getUserAnnouncements(): Promise<Announcement[]> {
-    const response = await apiClient.get<{ success: true; data: Announcement[] }>('/announcements/me');
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<Announcement[]>('/announcements/me');
+    return response.data;
   }
 
   // Get unread announcements
   async getUnreadAnnouncements(): Promise<Announcement[]> {
-    const response = await apiClient.get<{ success: true; data: Announcement[] }>('/announcements/me/unread');
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<Announcement[]>('/announcements/me/unread');
+    return response.data;
   }
 
   // Get unread count
   async getUnreadCount(): Promise<number> {
-    const response = await apiClient.get<{ success: true; data: { count: number } }>('/announcements/me/unread-count');
-    return response.data.data.count;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<{ count: number }>('/announcements/me/unread-count');
+    return response.data.count;
   }
 
   // Mark announcement as read
   async markAnnouncementAsRead(id: string): Promise<Announcement> {
-    const response = await apiClient.put<{ success: true; data: Announcement; message: string }>(`/announcements/${id}/read`);
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.put<Announcement>(`/announcements/${id}/read`);
+    return response.data;
   }
 
   // Mark all announcements as read
   async markAllAnnouncementsAsRead(): Promise<void> {
-    await apiClient.put<{ success: true; message: string }>('/announcements/me/read-all');
+    await apiClient.put<void>('/announcements/me/read-all');
   }
 
   // Create announcement (admin/manager only)
   async createAnnouncement(data: CreateAnnouncementData): Promise<Announcement> {
-    const response = await apiClient.post<{ success: true; data: Announcement; message: string }>('/announcements', data);
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.post<Announcement>('/announcements', data);
+    return response.data;
   }
 
   // Get all announcements (admin/manager only)
   async getAllAnnouncements(): Promise<Announcement[]> {
-    const response = await apiClient.get<{ success: true; data: Announcement[] }>('/announcements');
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<Announcement[]>('/announcements');
+    return response.data;
   }
 
   // Delete announcement (admin/manager only)
   async deleteAnnouncement(id: string): Promise<void> {
-    await apiClient.delete<{ success: true; message: string }>(`/announcements/${id}`);
+    await apiClient.delete<void>(`/announcements/${id}`);
   }
 
   // Get announcement by ID
   async getAnnouncementById(id: string): Promise<Announcement> {
-    const response = await apiClient.get<{ success: true; data: Announcement }>(`/announcements/${id}`);
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<Announcement>(`/announcements/${id}`);
+    return response.data;
   }
 
   // Legacy method for backward compatibility
@@ -350,7 +383,16 @@ class ApiService {
     const response = await apiClient.get<User[]>('/users', {
       params,
     });
-    return response.data;
+    // Handle both direct array and wrapped response
+    const data = response.data;
+    if (Array.isArray(data)) {
+      return data;
+    }
+    // Check if it's a wrapped response with nested data
+    if (data && typeof data === 'object' && 'data' in data && Array.isArray((data as any).data)) {
+      return (data as any).data;
+    }
+    return [];
   }
 
   /**
@@ -436,53 +478,266 @@ class ApiService {
 
   // System Configuration Methods (Admin Only)
   async getSystemConfig(): Promise<SystemConfig> {
-    const response = await apiClient.get<{ success: true; data: SystemConfig }>('/system-config');
-    return response.data.data;
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<SystemConfig>('/system-config');
+    return response.data;
   }
 
   async updateProjectName(data: UpdateProjectNameRequest): Promise<SystemConfig> {
-    const response = await apiClient.put<{ success: true; data: SystemConfig; message: string }>(
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.put<SystemConfig>(
       '/system-config/name',
       data
     );
-    return response.data.data;
+    return response.data;
   }
 
   async updateLogo(data: UpdateLogoRequest): Promise<SystemConfig> {
-    const response = await apiClient.put<{ success: true; data: SystemConfig; message: string }>(
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.put<SystemConfig>(
       '/system-config/logo',
       data
     );
-    return response.data.data;
+    return response.data;
   }
 
   async addEmailDomain(data: AddEmailDomainRequest): Promise<SystemConfig> {
-    const response = await apiClient.post<{ success: true; data: SystemConfig; message: string }>(
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.post<SystemConfig>(
       '/system-config/email-domains',
       data
     );
-    return response.data.data;
+    return response.data;
   }
 
   async removeEmailDomain(data: RemoveEmailDomainRequest): Promise<SystemConfig> {
-    const response = await apiClient.delete<{ success: true; data: SystemConfig; message: string }>(
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.delete<SystemConfig>(
       '/system-config/email-domains',
       { data }
     );
-    return response.data.data;
+    return response.data;
   }
 
   // Public System Configuration (No authentication required)
   async getPublicSystemConfig(): Promise<PublicSystemConfig> {
-    const response = await apiClient.get<{ success: true; data: PublicSystemConfig }>(
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<PublicSystemConfig>(
       '/system-config/public',
       { requiresAuth: false }
     );
-    const result = response.data.data;
+    const result = response.data;
     // Ensure projectName is always present
     return {
       projectName: result.projectName || 'Campus Helper',
       logoUrl: result.logoUrl,
+    };
+  }
+
+  // ==================== Analytics ====================
+
+  /**
+   * Get request statistics
+   */
+  async getRequestStatistics(): Promise<RequestStatistics> {
+    const response = await apiClient.get<RequestStatistics>('/analytics/statistics');
+    return response.data;
+  }
+
+  /**
+   * Get current month category chart
+   */
+  async getCurrentMonthCategoryChart(): Promise<CategoryChartData> {
+    const response = await apiClient.get<CategoryChartData>('/analytics/charts/category');
+    return response.data;
+  }
+
+  /**
+   * Get current month status chart
+   */
+  async getCurrentMonthStatusChart(): Promise<StatusChartData> {
+    const response = await apiClient.get<StatusChartData>('/analytics/charts/status');
+    return response.data;
+  }
+
+  /**
+   * Get current month daily chart
+   */
+  async getCurrentMonthDailyChart(): Promise<DailyChartData> {
+    const response = await apiClient.get<DailyChartData>('/analytics/charts/daily');
+    return response.data;
+  }
+
+  /**
+   * Get complete analytics summary
+   */
+  async getAnalyticsSummary(): Promise<AnalyticsSummary> {
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<AnalyticsSummary>('/analytics/summary');
+    return response.data;
+  }
+
+  // ==================== AI Chatbot ====================
+
+  /**
+   * Send a chat message to AI assistant
+   */
+  async sendAIChatMessage(
+    message: string,
+    conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>
+  ): Promise<AIChatResponse> {
+    const requestData: AIChatRequest = {
+      message,
+      conversationHistory,
+    };
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.post<{ response: string }>('/ai/chat', requestData);
+    // Response is already ApiSuccessResponse<{ response: string }> which matches AIChatResponse
+    return response;
+  }
+
+  /**
+   * Get system prompt (admin only)
+   */
+  async getSystemPrompt(): Promise<SystemPromptResponse> {
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<{ systemPrompt: string }>('/ai/system-prompt');
+    // Response is already ApiSuccessResponse<{ systemPrompt: string }> which matches SystemPromptResponse
+    return response;
+  }
+
+  /**
+   * Update system prompt (admin only)
+   */
+  async updateSystemPrompt(systemPrompt: string): Promise<UpdateSystemPromptResponse> {
+    const requestData: UpdateSystemPromptRequest = {
+      systemPrompt,
+    };
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.put<{ systemPrompt: string; updatedAt: string }>('/ai/system-prompt', requestData);
+    // Ensure message is always a string to match UpdateSystemPromptResponse
+    return {
+      ...response,
+      message: response.message || 'System prompt updated successfully',
+    };
+  }
+
+  // ==================== Campus Map ====================
+
+  /**
+   * Get all active markers (all authenticated users)
+   */
+  async getAllMarkers(category?: string): Promise<MarkersResponse> {
+    // Backend returns { success: true, data: CampusMapMarker[], count: number }
+    // API client returns ApiSuccessResponse<T> which extracts response.data from axios
+    // So we get { success: true, data: { success: true, data: [...], count: number } }
+    // Actually, the API client returns response.data which is the axios response.data
+    // So if backend returns { success: true, data: [...], count: 1 }, 
+    // axios response.data is { success: true, data: [...], count: 1 }
+    // and API client returns that as ApiSuccessResponse
+    const response = await apiClient.get<any>(
+      '/campus-map',
+      category ? { params: { category } } : undefined
+    );
+    // Handle both standard ApiSuccessResponse and backend response with count
+    const backendData = response.data;
+    const data = Array.isArray(backendData?.data) ? backendData.data : (Array.isArray(backendData) ? backendData : []);
+    const count = backendData?.count ?? data.length;
+    return {
+      success: true,
+      data,
+      count,
+    };
+  }
+
+  /**
+   * Get markers by category (all authenticated users)
+   */
+  async getMarkersByCategory(category: string): Promise<MarkersResponse> {
+    const response = await apiClient.get<any>(`/campus-map/category/${category}`);
+    const backendData = response.data;
+    const data = Array.isArray(backendData?.data) ? backendData.data : (Array.isArray(backendData) ? backendData : []);
+    const count = backendData?.count ?? data.length;
+    return {
+      success: true,
+      data,
+      count,
+    };
+  }
+
+  /**
+   * Get marker by ID (all authenticated users)
+   */
+  async getMarkerById(id: string): Promise<MarkerResponse> {
+    const response = await apiClient.get<CampusMapMarker>(`/campus-map/${id}`);
+    return {
+      success: true,
+      data: response.data,
+    };
+  }
+
+  /**
+   * Get all markers including inactive (admin only)
+   */
+  async getAllMarkersAdmin(category?: string): Promise<MarkersResponse> {
+    const response = await apiClient.get<any>(
+      '/campus-map/admin/all',
+      category ? { params: { category } } : undefined
+    );
+    const backendData = response.data;
+    const data = Array.isArray(backendData?.data) ? backendData.data : (Array.isArray(backendData) ? backendData : []);
+    const count = backendData?.count ?? data.length;
+    return {
+      success: true,
+      data,
+      count,
+    };
+  }
+
+  /**
+   * Create marker (admin only)
+   */
+  async createMarker(data: CreateMarkerRequest): Promise<MarkerResponse> {
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.post<CampusMapMarker>('/campus-map', data);
+    return {
+      success: true,
+      data: response.data,
+    };
+  }
+
+  /**
+   * Update marker (admin only)
+   */
+  async updateMarker(id: string, data: UpdateMarkerRequest): Promise<MarkerResponse> {
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.put<CampusMapMarker>(`/campus-map/${id}`, data);
+    return {
+      success: true,
+      data: response.data,
+    };
+  }
+
+  /**
+   * Delete marker (admin only)
+   */
+  async deleteMarker(id: string): Promise<{ success: true; message: string }> {
+    await apiClient.delete<void>(`/campus-map/${id}`);
+    return {
+      success: true,
+      message: 'Marker deleted successfully',
+    };
+  }
+
+  /**
+   * Get statistics (admin only)
+   */
+  async getMarkerStatistics(): Promise<StatisticsResponse> {
+    // API client returns ApiSuccessResponse<T>, so we pass the inner data type
+    const response = await apiClient.get<MarkerStatistics>('/campus-map/admin/statistics');
+    return {
+      success: true,
+      data: response.data,
     };
   }
 }

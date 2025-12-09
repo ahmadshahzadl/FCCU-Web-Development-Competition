@@ -206,12 +206,14 @@ class ApiClient {
     const { requiresAuth = true, ...axiosConfig } = options;
 
     try {
-      const response = await this.api.request<T>({
+      const response = await this.api.request<ApiSuccessResponse<T>>({
         url: endpoint,
         ...axiosConfig,
       });
 
-      return response as unknown as ApiSuccessResponse<T>;
+      // Extract the actual API response from axios response.data
+      // The backend returns { success: true, data: T, message?: string }
+      return response.data as ApiSuccessResponse<T>;
     } catch (error) {
       throw error;
     }

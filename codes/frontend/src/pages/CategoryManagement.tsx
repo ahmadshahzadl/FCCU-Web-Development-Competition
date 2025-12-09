@@ -24,10 +24,13 @@ const CategoryManagement = () => {
     try {
       setLoading(true);
       const response = await apiService.getCategories(includeInactive);
-      setCategories(response);
+      // Ensure response is always an array
+      const categoriesArray = Array.isArray(response) ? response : [];
+      setCategories(categoriesArray);
     } catch (error: any) {
       toast.error('Failed to load categories');
       console.error('Error loading categories:', error);
+      setCategories([]); // Set empty array on error
     } finally {
       setLoading(false);
     }

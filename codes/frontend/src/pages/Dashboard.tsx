@@ -1,281 +1,330 @@
+/**
+ * Dashboard Page
+ * 
+ * Analytics dashboard for admin and manager roles
+ * Features: Statistics, charts, and quick actions
+ */
+
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiService } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-hot-toast';
-import type { ServiceRequest, RequestStatus, RequestCategory } from '@/types';
-import { getStatusColor, getCategoryLabel, formatDate } from '@/utils/helpers';
-import { Search, RefreshCw, FileText, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { RefreshCw, Users, FileText, Settings, Filter } from 'lucide-react';
+import type { AnalyticsSummary } from '@/types';
+import StatisticsCards from '@/components/Analytics/StatisticsCards';
+import CategoryChart from '@/components/Analytics/CategoryChart';
+import StatusChart from '@/components/Analytics/StatusChart';
+import DailyChart from '@/components/Analytics/DailyChart';
 
 const Dashboard = () => {
-  const [requests, setRequests] = useState<ServiceRequest[]>([]);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<{
-    status?: RequestStatus;
-    category?: RequestCategory;
-    search?: string;
-  }>({});
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchRequests();
-  }, [filters]);
+    if (user && (user.role === 'admin' || user.role === 'manager' || user.role === 'team')) {
+      // For team role, we'll show limited stats
+      if (user.role === 'team') {
+        // Team can see basic public stats
+        loadAnalytics();
+      } else {
+        loadAnalytics();
+      }
+    }
+  }, [user]);
 
-  const fetchRequests = async () => {
-    setLoading(true);
+  const loadAnalytics = async () => {
     try {
-      const data = await apiService.getRequests(filters);
-      const requestsArray = Array.isArray(data) ? data : (data as any).data || [];
-      setRequests(requestsArray);
-    } catch (error: any) {
-      toast.error('Failed to fetch requests');
-      console.error('Error fetching requests:', error);
+      setLoading(true);
+      setError(null);
+      const response = await apiService.getAnalyticsSummary();
+      setSummary(response);
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to load analytics';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStatusUpdate = async (id: string, status: RequestStatus) => {
-    try {
-      await apiService.updateRequestStatus(id, { status });
-      toast.success('Status updated successfully');
-      fetchRequests();
-    } catch (error: any) {
-      toast.error('Failed to update status');
-      console.error('Error updating status:', error);
-    }
-  };
-
-  // Calculate statistics
-  const stats = {
-    total: requests.length,
-    pending: requests.filter((r) => r.status === 'pending').length,
-    inProgress: requests.filter((r) => r.status === 'in-progress').length,
-    resolved: requests.filter((r) => r.status === 'resolved').length,
-  };
+  // Quick Actions
+  const quickActions = [
+    {
+      title: 'User Management',
+      description: 'Manage users and roles',
+      icon: Users,
+      path: '/users',
+      color: 'bg-blue-500',
+      bgGradient: 'from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20',
+      borderColor: 'border-blue-200 dark:border-blue-800/50',
+      textColor: 'text-blue-600 dark:text-blue-400',
+      availableFor: ['admin', 'manager'] as ('admin' | 'manager')[],
+    },
+    {
+      title: 'Request Management',
+      description: 'View and manage requests',
+      icon: FileText,
+      path: '/requests',
+      color: 'bg-green-500',
+      bgGradient: 'from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20',
+      borderColor: 'border-green-200 dark:border-green-800/50',
+      textColor: 'text-green-600 dark:text-green-400',
+      availableFor: ['admin', 'manager'] as ('admin' | 'manager')[],
+    },
+    {
+      title: 'Team Requests',
+      description: 'View and manage team requests',
+      icon: FileText,
+      path: '/team-requests',
+      color: 'bg-green-500',
+      bgGradient: 'from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20',
+      borderColor: 'border-green-200 dark:border-green-800/50',
+      textColor: 'text-green-600 dark:text-green-400',
+      availableFor: ['team'] as ('team')[],
+    },
+    {
+      title: 'Category Management',
+      description: 'Manage request categories',
+      icon: Filter,
+      path: '/categories',
+      color: 'bg-purple-500',
+      bgGradient: 'from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20',
+      borderColor: 'border-purple-200 dark:border-purple-800/50',
+      textColor: 'text-purple-600 dark:text-purple-400',
+      availableFor: ['admin', 'manager'] as ('admin' | 'manager')[],
+    },
+    {
+      title: 'System Config',
+      description: 'Configure system settings',
+      icon: Settings,
+      path: '/system-config',
+      color: 'bg-orange-500',
+      bgGradient: 'from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20',
+      borderColor: 'border-orange-200 dark:border-orange-800/50',
+      textColor: 'text-orange-600 dark:text-orange-400',
+      availableFor: ['admin'] as ('admin')[],
+    },
+  ].filter((action) => user && (action.availableFor as string[]).includes(user.role));
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500 dark:text-gray-400">Loading requests...</div>
+      <div className="w-full space-y-3 sm:space-y-4 md:space-y-6 px-3 sm:px-4 md:px-0 transition-colors duration-300">
+        <div className="card">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400 mx-auto"></div>
+              <p className="mt-4 text-sm sm:text-base text-gray-600 dark:text-gray-400">Loading analytics...</p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
+  if (error) {
+    return (
+      <div className="w-full space-y-3 sm:space-y-4 md:space-y-6 px-3 sm:px-4 md:px-0 transition-colors duration-300">
+        <div className="card bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50">
+          <div className="p-4 sm:p-6">
+            <p className="text-sm sm:text-base text-red-800 dark:text-red-400">{error}</p>
+            <button
+              onClick={loadAnalytics}
+              className="mt-3 sm:mt-4 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-red-600 dark:bg-red-500 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors duration-200 touch-manipulation"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // For team role, show limited view even if no summary
+  const isTeamRole = user?.role === 'team';
+  const hasSummary = summary && summary.statistics && summary.statistics.status;
+
+  if (!hasSummary && !isTeamRole) {
+    return (
+      <div className="w-full space-y-3 sm:space-y-4 md:space-y-6 px-3 sm:px-4 md:px-0 transition-colors duration-300">
+        <div className="card">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">No analytics data available</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const resolutionRate = hasSummary && summary.statistics.status.total > 0
+    ? ((summary.statistics.status.resolved / summary.statistics.status.total) * 100).toFixed(1)
+    : '0';
+
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="w-full space-y-3 sm:space-y-4 md:space-y-6 px-3 sm:px-4 md:px-0 transition-colors duration-300">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 transition-colors duration-300">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Service Dashboard</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Manage and track service requests
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
+            Analytics Dashboard
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">
+            Comprehensive analytics and insights
           </p>
         </div>
         <button
-          onClick={fetchRequests}
-          className="btn btn-secondary flex items-center space-x-2"
+          onClick={loadAnalytics}
+          className="btn btn-secondary flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 w-full sm:w-auto min-w-0"
         >
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw className="h-4 w-4 flex-shrink-0" />
           <span>Refresh</span>
         </button>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="card bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border-blue-200 dark:border-blue-800/50">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Requests</p>
-              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">{stats.total}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-blue-500/10 dark:bg-blue-500/20">
-              <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
-          </div>
-        </div>
-
-        <div className="card bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 border-amber-200 dark:border-amber-800/50">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Pending</p>
-              <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 mt-1">{stats.pending}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-amber-500/10 dark:bg-amber-500/20">
-              <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-            </div>
-          </div>
-        </div>
-
-        <div className="card bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-primary-950/30 dark:to-primary-900/20 border-primary-200 dark:border-primary-800/50">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-primary-600 dark:text-primary-400">In Progress</p>
-              <p className="text-2xl font-bold text-primary-900 dark:text-primary-100 mt-1">{stats.inProgress}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-primary-500/10 dark:bg-primary-500/20">
-              <AlertCircle className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-            </div>
-          </div>
-        </div>
-
-        <div className="card bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/30 dark:to-emerald-900/20 border-emerald-200 dark:border-emerald-800/50">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Resolved</p>
-              <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100 mt-1">{stats.resolved}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20">
-              <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-            </div>
-          </div>
+      {/* Quick Actions */}
+      <div className="card p-3 sm:p-4 md:p-6 transition-colors duration-300">
+        <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white transition-colors duration-300">
+          Quick Actions
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {quickActions.map((action, index) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={index}
+                onClick={() => navigate(action.path)}
+                className={`card bg-gradient-to-br ${action.bgGradient} border ${action.borderColor} p-4 hover:shadow-lg transition-all duration-200 text-left touch-manipulation`}
+              >
+                <div className="flex items-start space-x-3">
+                  <div className={`p-2 sm:p-3 rounded-lg ${action.color} bg-opacity-10 dark:bg-opacity-20 flex-shrink-0`}>
+                    <Icon className={`h-5 w-5 sm:h-6 sm:w-6 ${action.textColor}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`text-sm sm:text-base font-semibold ${action.textColor} mb-1 transition-colors duration-300`}>
+                      {action.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
+                      {action.description}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="card">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
-            <input
-              type="text"
-              placeholder="Search requests..."
-              value={filters.search || ''}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-              className="input pl-10"
+      {/* Statistics Cards - Only show for admin/manager or if team has summary */}
+      {hasSummary && (user?.role === 'admin' || user?.role === 'manager') && (
+        <StatisticsCards statistics={summary.statistics} />
+      )}
+
+      {/* Public Stats for Team - Show basic stats */}
+      {isTeamRole && hasSummary && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 transition-colors duration-300">
+          <div className="card p-4 transition-colors duration-300">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 transition-colors duration-300">
+              Total Requests
+            </div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
+              {summary.statistics.status.total}
+            </div>
+          </div>
+          <div className="card p-4 transition-colors duration-300">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 transition-colors duration-300">
+              Pending
+            </div>
+            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 transition-colors duration-300">
+              {summary.statistics.status.pending}
+            </div>
+          </div>
+          <div className="card p-4 transition-colors duration-300">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 transition-colors duration-300">
+              In Progress
+            </div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 transition-colors duration-300">
+              {summary.statistics.status.inProgress}
+            </div>
+          </div>
+          <div className="card p-4 transition-colors duration-300">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 transition-colors duration-300">
+              Resolved
+            </div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400 transition-colors duration-300">
+              {summary.statistics.status.resolved}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Statistics Cards for Admin/Manager */}
+      {hasSummary && (user?.role === 'admin' || user?.role === 'manager') && (
+        <StatisticsCards statistics={summary.statistics} />
+      )}
+
+      {/* Resolution Rate - Show for all roles if summary exists */}
+      {hasSummary && (
+        <div className="card p-3 sm:p-4 md:p-6 transition-colors duration-300">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300">
+              Resolution Rate
+            </span>
+            <span className="text-base sm:text-lg md:text-xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
+              {resolutionRate}%
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 sm:h-2.5 transition-colors duration-300">
+            <div
+              className="bg-green-600 dark:bg-green-500 h-2 sm:h-2.5 rounded-full transition-all duration-300"
+              style={{ width: `${resolutionRate}%` }}
             />
           </div>
-          <div className="flex gap-2">
-            <select
-              value={filters.status || ''}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  status: e.target.value as RequestStatus | undefined,
-                })
-              }
-              className="input"
-            >
-              <option value="">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="in-progress">In Progress</option>
-              <option value="resolved">Resolved</option>
-            </select>
-            <select
-              value={filters.category || ''}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  category: e.target.value as RequestCategory | undefined,
-                })
-              }
-              className="input"
-            >
-              <option value="">All Categories</option>
-              <option value="maintenance">Maintenance</option>
-              <option value="academic">Academic</option>
-              <option value="lost-found">Lost & Found</option>
-              <option value="general">General</option>
-            </select>
-          </div>
         </div>
-      </div>
+      )}
 
-      {/* Table */}
-      <div className="card p-0 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-            <thead className="bg-gray-50 dark:bg-gray-900/50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  Category
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  Description
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  Student
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-              {requests.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
-                    <div className="text-gray-400 dark:text-gray-500">
-                      <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p className="text-sm">No requests found</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                requests.map((request) => (
-                  <tr 
-                    key={request._id} 
-                    className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-mono text-gray-600 dark:text-gray-400">
-                        {request._id.slice(-8)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {getCategoryLabel(request.category as RequestCategory)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate block">
-                        {request.description}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {request.studentName || 'Anonymous'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ${getStatusColor(request.status)}`}>
-                        {request.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {formatDate(request.createdAt)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <select
-                        value={request.status}
-                        onChange={(e) =>
-                          handleStatusUpdate(request._id, e.target.value as RequestStatus)
-                        }
-                        className="text-sm border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20 focus:border-primary-500 dark:focus:border-primary-400 transition-colors"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="resolved">Resolved</option>
-                      </select>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* Charts Grid - Only show for admin/manager */}
+      {hasSummary && summary.charts && (user?.role === 'admin' || user?.role === 'manager') && (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 transition-colors duration-300">
+            {/* Category Chart */}
+            {summary.charts.categoryChart && (
+              <div className="card p-3 sm:p-4 md:p-6 transition-colors duration-300">
+                <h2 className="text-sm sm:text-base md:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white transition-colors duration-300">
+                  Requests by Category - {summary.charts.categoryChart.month}
+                </h2>
+                <CategoryChart data={summary.charts.categoryChart} />
+              </div>
+            )}
+
+            {/* Status Chart */}
+            {summary.charts.statusChart && (
+              <div className="card p-3 sm:p-4 md:p-6 transition-colors duration-300">
+                <h2 className="text-sm sm:text-base md:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white transition-colors duration-300">
+                  Requests by Status - {summary.charts.statusChart.month}
+                </h2>
+                <StatusChart data={summary.charts.statusChart} />
+              </div>
+            )}
+          </div>
+
+          {/* Daily Chart */}
+          {summary.charts.dailyChart && (
+            <div className="card p-3 sm:p-4 md:p-6 transition-colors duration-300">
+              <h2 className="text-sm sm:text-base md:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white transition-colors duration-300">
+                Daily Request Trends - {summary.charts.dailyChart.month}
+              </h2>
+              <DailyChart data={summary.charts.dailyChart} />
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
 
 export default Dashboard;
-

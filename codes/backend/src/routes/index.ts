@@ -4,7 +4,10 @@ import AnnouncementRoutesInstance from '../modules/announcement/Announcement.rou
 import AuthRoutesInstance from '../modules/auth/Auth.routes';
 import UserRoutesInstance from '../modules/user/User.routes';
 import SystemConfigRoutesInstance from '../modules/systemConfig/SystemConfig.routes';
+import AIRoutesInstance from '../modules/ai/AI.routes';
 import CategoryRoutesInstance from '../modules/category/Category.routes';
+import AnalyticsRoutesInstance from '../modules/analytics/Analytics.routes';
+import CampusMapRoutesInstance from '../modules/campusMap/CampusMap.routes';
 
 
 class ApiRoutes {
@@ -24,6 +27,16 @@ class ApiRoutes {
     
     // System Config Routes
     this.router.use('/system-config', SystemConfigRoutesInstance);
+    
+    // AI Routes
+    this.router.use('/ai', AIRoutesInstance);
+    
+    // Analytics Routes (protected)
+    this.router.use('/analytics', AnalyticsRoutesInstance);
+    
+    // Campus Map Routes
+    this.router.use('/campus-map', CampusMapRoutesInstance);
+    
     // Category Routes (protected)
     this.router.use('/categories', CategoryRoutesInstance);
     

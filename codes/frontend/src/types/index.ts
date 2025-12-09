@@ -176,6 +176,106 @@ export interface TrendData {
   count: number;
 }
 
+// New Analytics Types
+export interface RequestStatistics {
+  status: {
+    pending: number;
+    inProgress: number;
+    resolved: number;
+    total: number;
+  };
+  category: Record<string, number>; // category slug -> count
+  timeRange: {
+    today: number;
+    thisWeek: number;
+    thisMonth: number;
+  };
+  categoryBreakdown: Array<{
+    category: string;
+    categoryName: string;
+    count: number;
+  }>;
+}
+
+export interface CategoryChartData {
+  month: string;
+  data: Array<{
+    category: string;
+    categoryName: string;
+    count: number;
+  }>;
+  total: number;
+}
+
+export interface StatusChartData {
+  month: string;
+  data: Array<{
+    status: 'pending' | 'in-progress' | 'resolved';
+    count: number;
+  }>;
+  total: number;
+}
+
+export interface DailyChartData {
+  month: string;
+  data: Array<{
+    date: string; // YYYY-MM-DD format
+    count: number;
+  }>;
+  total: number;
+}
+
+export interface AnalyticsSummary {
+  statistics: RequestStatistics;
+  charts: {
+    categoryChart: CategoryChartData;
+    statusChart: StatusChartData;
+    dailyChart: DailyChartData;
+  };
+}
+
+// AI Chatbot Types
+export interface AIChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp?: Date;
+}
+
+export interface AIChatRequest {
+  message: string;
+  conversationHistory?: Array<{
+    role: 'user' | 'assistant';
+    content: string;
+  }>;
+}
+
+export interface AIChatResponse {
+  success: true;
+  data: {
+    response: string;
+  };
+}
+
+export interface SystemPromptResponse {
+  success: true;
+  data: {
+    systemPrompt: string;
+  };
+}
+
+export interface UpdateSystemPromptRequest {
+  systemPrompt: string;
+}
+
+export interface UpdateSystemPromptResponse {
+  success: true;
+  data: {
+    systemPrompt: string;
+    updatedAt: string;
+  };
+  message: string;
+}
+
 // User Types
 export type UserRole = 'admin' | 'student' | 'team' | 'manager';
 
@@ -329,5 +429,72 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+// Campus Map Types
+export interface CampusMapMarker {
+  _id: string;
+  name: string;
+  category: string;
+  description?: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+  contactInfo?: string;
+  openingHours?: string;
+  icon?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateMarkerRequest {
+  name: string;
+  category: string;
+  description?: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+  contactInfo?: string;
+  openingHours?: string;
+  icon?: string;
+  isActive?: boolean;
+}
+
+export interface UpdateMarkerRequest {
+  name?: string;
+  category?: string;
+  description?: string;
+  latitude?: number;
+  longitude?: number;
+  address?: string;
+  contactInfo?: string;
+  openingHours?: string;
+  icon?: string;
+  isActive?: boolean;
+}
+
+export interface MarkersResponse {
+  success: true;
+  data: CampusMapMarker[];
+  count: number;
+}
+
+export interface MarkerResponse {
+  success: true;
+  data: CampusMapMarker;
+}
+
+export interface MarkerStatistics {
+  total: number;
+  active: number;
+  inactive: number;
+  byCategory: Record<string, number>;
+  uniqueCategories: string[];
+}
+
+export interface StatisticsResponse {
+  success: true;
+  data: MarkerStatistics;
 }
 

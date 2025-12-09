@@ -8,13 +8,11 @@ import Layout from './components/Layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Unauthorized from './pages/Unauthorized';
-import Home from './pages/Home';
 import ServiceRequest from './pages/ServiceRequest';
 import Dashboard from './pages/Dashboard';
 import Map from './pages/Map';
 import Announcements from './pages/Announcements';
 import RequestHistory from './pages/RequestHistory';
-import Analytics from './pages/Analytics';
 import Chat from './pages/Chat';
 import UserManagement from './pages/UserManagement';
 import RequestManagement from './pages/RequestManagement';
@@ -22,6 +20,8 @@ import CategoryManagement from './pages/CategoryManagement';
 import TeamRequestsList from './pages/TeamRequestsList';
 import Profile from './pages/Profile';
 import SystemConfig from './pages/SystemConfig';
+import CampusMapManagement from './pages/CampusMapManagement';
+import SystemPromptManager from './components/SystemPrompt/SystemPromptManager';
 import Chatbot from './components/Chatbot/Chatbot';
 import { useStudentSocket } from './hooks/useStudentSocket';
 
@@ -106,6 +106,17 @@ const ToasterWithTheme = () => {
   );
 };
 
+const RoleBasedRedirect = () => {
+  const { user } = useAuth();
+  
+  if (user?.role === 'admin' || user?.role === 'manager') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  // For students and team, redirect to announcements
+  return <Navigate to="/announcements" replace />;
+};
+
 const AppRoutes = () => {
   const { isAuthenticated, loading } = useAuth();
 
@@ -130,14 +141,12 @@ const AppRoutes = () => {
       <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
-      {/* Protected Routes - Student Access */}
+      {/* Protected Routes - Redirect based on role */}
       <Route
         path="/"
         element={
           <ProtectedRoute allowedRoles={['student', 'admin', 'team', 'manager']}>
-            <Layout>
-              <Home />
-            </Layout>
+            <RoleBasedRedirect />
           </ProtectedRoute>
         }
       />
@@ -174,7 +183,7 @@ const AppRoutes = () => {
       <Route
         path="/history"
         element={
-          <ProtectedRoute allowedRoles={['student', 'team']}>
+          <ProtectedRoute allowedRoles={['student']}>
             <Layout>
               <RequestHistory />
             </Layout>
@@ -213,17 +222,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/analytics"
-        element={
-          <ProtectedRoute allowedRoles={['admin', 'manager']}>
-            <Layout>
-              <Analytics />
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-
       {/* Protected Routes - Profile (All Roles) */}
       <Route
         path="/profile"
@@ -273,6 +271,26 @@ const AppRoutes = () => {
           <ProtectedRoute allowedRoles={['admin']}>
             <Layout>
               <SystemConfig />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/system-prompt"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout>
+              <SystemPromptManager />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campus-map-management"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout>
+              <CampusMapManagement />
             </Layout>
           </ProtectedRoute>
         }

@@ -4,7 +4,7 @@
  * Compact modal for creating or editing users
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { X, Eye, EyeOff } from 'lucide-react';
 import type { User, UserRole, CreateUserRequest } from '@/types';
 import EmailInputWithDomain from '@/components/Form/EmailInputWithDomain';
@@ -32,6 +32,18 @@ const UserCreateEditModal = ({
 }: UserCreateEditModalProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   // Helper function to update form data fields
   // Use functional update pattern to avoid stale closure issues
   const updateField = useCallback((field: keyof CreateUserRequest, value: any) => {
@@ -41,16 +53,40 @@ const UserCreateEditModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <>
+      {/* Backdrop overlay - covers full viewport with blur including header */}
+      <div 
+        className="fixed bg-black/50 dark:bg-black/70 z-[9998]"
+        style={{ 
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw', 
+          height: '100vh',
+          minHeight: '100vh',
+          margin: 0,
+          padding: 0,
+          position: 'fixed',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)'
+        }}
+        onClick={onClose}
+      />
+      {/* Modal content */}
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 pointer-events-none">
+        <div 
+          className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto pointer-events-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+        <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
             {editingUser ? 'Edit User' : 'Create User'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 touch-manipulation p-1"
             aria-label="Close modal"
           >
             <X className="h-5 w-5" />
@@ -58,7 +94,7 @@ const UserCreateEditModal = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={onSubmit} className="p-4 space-y-4">
+        <form onSubmit={onSubmit} className="p-3 sm:p-4 space-y-3 sm:space-y-4">
           {/* Email */}
           <div className="space-y-1.5">
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -169,24 +205,25 @@ const UserCreateEditModal = ({
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end space-x-2 pt-3 border-t border-gray-200 dark:border-gray-800">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:space-x-2 pt-3 border-t border-gray-200 dark:border-gray-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
+              className="w-full sm:w-auto px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 touch-manipulation"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 dark:bg-primary-500 rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 transition-all duration-200"
+              className="w-full sm:w-auto px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-primary-600 dark:bg-primary-500 rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 transition-all duration-200 touch-manipulation"
             >
               {editingUser ? 'Update' : 'Create'}
             </button>
           </div>
         </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

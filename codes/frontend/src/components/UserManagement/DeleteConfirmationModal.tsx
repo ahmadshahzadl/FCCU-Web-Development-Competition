@@ -4,6 +4,7 @@
  * Confirmation dialog for deleting users
  */
 
+import { useEffect } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 interface DeleteConfirmationModalProps {
@@ -19,11 +20,47 @@ const DeleteConfirmationModal = ({
   onConfirm,
   onCancel,
 }: DeleteConfirmationModalProps) => {
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full p-6">
+    <>
+      {/* Backdrop overlay - covers full viewport with blur including header */}
+      <div 
+        className="fixed bg-black/50 dark:bg-black/70 z-[9998]"
+        style={{ 
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw', 
+          height: '100vh',
+          minHeight: '100vh',
+          margin: 0,
+          padding: 0,
+          position: 'fixed',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)'
+        }}
+        onClick={onCancel}
+      />
+      {/* Modal content */}
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
+        <div 
+          className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full p-6 pointer-events-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
         <div className="flex items-start space-x-4">
           <div className="flex-shrink-0">
             <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
@@ -53,8 +90,9 @@ const DeleteConfirmationModal = ({
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

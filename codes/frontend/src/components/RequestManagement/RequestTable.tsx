@@ -67,29 +67,29 @@ const RequestTable = ({
   return (
     <>
       <div className="card overflow-hidden p-0 transition-colors duration-300">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto -mx-1 sm:mx-0">
+          <table className="w-full min-w-[640px]">
             <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">
+                <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">
                   ID
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">
+                <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">
                   Category
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell transition-colors duration-300">
+                <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell transition-colors duration-300">
                   Description
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">
+                <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">
                   Student
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">
+                <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell transition-colors duration-300">
+                <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell transition-colors duration-300">
                   Created
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">
+                <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">
                   Actions
                 </th>
               </tr>
@@ -100,56 +100,60 @@ const RequestTable = ({
                   key={request._id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-300"
                 >
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-300">
+                  <td className="px-3 sm:px-4 py-2.5 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-white transition-colors duration-300 font-mono">
                     {request._id.substring(0, 8)}...
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm transition-colors duration-300">
-                    <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 transition-colors duration-300">
+                  <td className="px-3 sm:px-4 py-2.5 sm:py-3 whitespace-nowrap text-xs sm:text-sm transition-colors duration-300">
+                    <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 transition-colors duration-300">
                       {getCategoryName(request.category)}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white hidden md:table-cell transition-colors duration-300">
-                    {request.description.length > 50
-                      ? `${request.description.substring(0, 50)}...`
-                      : request.description}
+                  <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-gray-900 dark:text-white hidden md:table-cell transition-colors duration-300">
+                    <div className="max-w-xs truncate">
+                      {request.description.length > 50
+                        ? `${request.description.substring(0, 50)}...`
+                        : request.description}
+                    </div>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white transition-colors duration-300">
-                    {request.studentName || 'N/A'}
+                  <td className="px-3 sm:px-4 py-2.5 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-white transition-colors duration-300">
+                    <div className="max-w-[120px] truncate">
+                      {request.studentName || 'N/A'}
+                    </div>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm transition-colors duration-300">
+                  <td className="px-3 sm:px-4 py-2.5 sm:py-3 whitespace-nowrap text-xs sm:text-sm transition-colors duration-300">
                     <span
-                      className={`px-2 py-1 rounded text-xs font-medium transition-colors duration-300 ${getStatusBadgeColor(
+                      className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs font-medium transition-colors duration-300 ${getStatusBadgeColor(
                         request.status
                       )}`}
                     >
                       {request.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 hidden lg:table-cell transition-colors duration-300">
+                  <td className="px-3 sm:px-4 py-2.5 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden lg:table-cell transition-colors duration-300">
                     {new Date(request.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm transition-colors duration-300">
-                    <div className="flex items-center space-x-2">
+                  <td className="px-3 sm:px-4 py-2.5 sm:py-3 whitespace-nowrap text-xs sm:text-sm transition-colors duration-300">
+                    <div className="flex items-center space-x-1 sm:space-x-2">
                       <button
                         onClick={() => onView(request)}
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors duration-300 p-1"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors duration-300 p-1 sm:p-1.5 touch-manipulation"
                         title="View details"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </button>
                       <button
                         onClick={() => onUpdate(request)}
-                        className="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300 transition-colors duration-300 p-1"
+                        className="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300 transition-colors duration-300 p-1 sm:p-1.5 touch-manipulation"
                         title="Update status"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </button>
                       <button
                         onClick={() => onDelete(request._id)}
-                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors duration-300 p-1"
+                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors duration-300 p-1 sm:p-1.5 touch-manipulation"
                         title="Delete request"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </button>
                     </div>
                   </td>
@@ -162,8 +166,8 @@ const RequestTable = ({
 
       {/* Pagination */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
-          <div className="text-sm text-gray-700 dark:text-gray-300 transition-colors duration-300">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 px-2 sm:px-0">
+          <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 transition-colors duration-300 text-center sm:text-left">
             Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
             {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
             {pagination.total} requests
@@ -172,21 +176,23 @@ const RequestTable = ({
             <button
               disabled={pagination.page === 1}
               onClick={() => onPageChange(pagination.page - 1)}
-              className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+              className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 touch-manipulation"
             >
-              <ChevronLeft className="h-4 w-4" />
-              <span>Previous</span>
+              <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Previous</span>
+              <span className="sm:hidden">Prev</span>
             </button>
-            <span className="px-4 py-1.5 text-sm text-gray-700 dark:text-gray-300 transition-colors duration-300">
+            <span className="px-2 sm:px-4 py-1.5 text-xs sm:text-sm text-gray-700 dark:text-gray-300 transition-colors duration-300 whitespace-nowrap">
               Page {pagination.page} of {pagination.totalPages}
             </span>
             <button
               disabled={pagination.page >= pagination.totalPages}
               onClick={() => onPageChange(pagination.page + 1)}
-              className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+              className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 touch-manipulation"
             >
-              <span>Next</span>
-              <ChevronRight className="h-4 w-4" />
+              <span className="hidden sm:inline">Next</span>
+              <span className="sm:hidden">Next</span>
+              <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </button>
           </div>
         </div>

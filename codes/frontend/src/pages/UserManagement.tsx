@@ -63,17 +63,21 @@ const UserManagement = () => {
         params.search = searchQuery.trim();
       }
       const data = await apiService.getUsers(params);
-      setUsers(data);
+      // Ensure data is always an array
+      const usersArray = Array.isArray(data) ? data : [];
+      setUsers(usersArray);
     } catch (error: any) {
       toast.error('Failed to fetch users');
       console.error('Error fetching users:', error);
+      setUsers([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
   };
 
   // Use users directly since filtering is done by API
-  const filteredUsers = users;
+  // Ensure filteredUsers is always an array
+  const filteredUsers = Array.isArray(users) ? users : [];
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -192,21 +196,21 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="w-full space-y-4 md:space-y-6 px-2 md:px-0 transition-colors duration-300">
+    <div className="w-full space-y-3 sm:space-y-4 md:space-y-6 px-3 sm:px-4 md:px-0 transition-colors duration-300">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors duration-300">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 transition-colors duration-300">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">User Management</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">User Management</h1>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">
             Manage users, roles, and permissions
           </p>
         </div>
         <div className="flex items-center space-x-2 w-full sm:w-auto">
           <button
             onClick={fetchUsers}
-            className="btn btn-secondary flex items-center space-x-2 text-sm px-3 py-2 flex-1 sm:flex-initial"
+            className="btn btn-secondary flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-initial min-w-0"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-4 w-4 flex-shrink-0" />
             <span className="hidden sm:inline">Refresh</span>
           </button>
           <button
@@ -215,9 +219,9 @@ const UserManagement = () => {
               setEditingUser(null);
               setShowCreateModal(true);
             }}
-            className="btn btn-primary flex items-center space-x-2 text-sm px-3 py-2 flex-1 sm:flex-initial"
+            className="btn btn-primary flex items-center justify-center space-x-2 text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-initial min-w-0"
           >
-            <UserPlus className="h-4 w-4" />
+            <UserPlus className="h-4 w-4 flex-shrink-0" />
             <span className="hidden sm:inline">Add User</span>
             <span className="sm:hidden">Add</span>
           </button>

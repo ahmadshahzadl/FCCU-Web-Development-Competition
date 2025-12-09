@@ -14,17 +14,17 @@ interface RequestFiltersProps {
 
 const RequestFilters = ({ filters, categories, onFilterChange }: RequestFiltersProps) => {
   return (
-    <div className="card p-4 transition-colors duration-300">
-      <div className="flex flex-col sm:flex-row gap-3">
+    <div className="card p-3 sm:p-4 transition-colors duration-300">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         {/* Status Filter */}
-        <div className="flex items-center space-x-2 sm:w-auto w-full">
+        <div className="flex items-center space-x-2 sm:w-auto w-full min-w-0">
           <Filter className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0 transition-colors duration-300" />
           <select
             value={filters.status}
             onChange={(e) =>
               onFilterChange({ status: e.target.value as '' | RequestStatus })
             }
-            className="input h-10 text-sm flex-1 sm:w-auto transition-colors duration-300"
+            className="input h-9 sm:h-10 text-xs sm:text-sm flex-1 sm:w-auto min-w-0 transition-colors duration-300"
           >
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
@@ -34,12 +34,12 @@ const RequestFilters = ({ filters, categories, onFilterChange }: RequestFiltersP
         </div>
 
         {/* Category Filter */}
-        <div className="flex items-center space-x-2 sm:w-auto w-full">
+        <div className="flex items-center space-x-2 sm:w-auto w-full min-w-0">
           <Filter className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0 transition-colors duration-300" />
           <select
             value={filters.category}
             onChange={(e) => onFilterChange({ category: e.target.value })}
-            className="input h-10 text-sm flex-1 sm:w-auto transition-colors duration-300"
+            className="input h-9 sm:h-10 text-xs sm:text-sm flex-1 sm:w-auto min-w-0 transition-colors duration-300"
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
