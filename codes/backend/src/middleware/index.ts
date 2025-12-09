@@ -82,8 +82,14 @@ export const setupMiddleware = (app: Express): void => {
   // Note: Rate limiting is applied per-route, not globally
   // This prevents double rate limiting and allows different limits for different endpoints
   
-  // Apply general limiter to non-API routes only
-  app.use(limiter);
+  // Apply general limiter to non-API routes only (exclude /api routes)
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    // Skip rate limiting for API routes (they have their own limiters)
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    limiter(req, res, next);
+  });
 
   // Request logging middleware (in development)
   if (env.NODE_ENV === 'development') {
